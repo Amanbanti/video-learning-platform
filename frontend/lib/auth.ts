@@ -1,11 +1,15 @@
+import {axiosInstance} from "./axios"
+
 export interface User {
   id: string
   email: string
   name: string
   isAdmin: boolean
-  subscriptionStatus: "trial" | "pending" | "active" | "expired"
+  subscriptionStatus: "trial" | "pending" | "active" | "none"
+  password: string
   trialVideosWatched: number
   maxTrialVideos: number
+  paymentReceipt?: string
 }
 
 export interface Course {
@@ -126,6 +130,7 @@ export const mockUser: User = {
   id: "1",
   email: "student@example.com",
   name: "John Doe",
+  password: "student123",
   isAdmin: false,
   subscriptionStatus: "trial",
   trialVideosWatched: 2,
@@ -136,6 +141,7 @@ export const mockAdmin: User = {
   id: "admin",
   email: "admin@edulearn.com",
   name: "Admin User",
+  password: "admin123",
   isAdmin: true,
   subscriptionStatus: "active",
   trialVideosWatched: 0,
@@ -154,6 +160,7 @@ export function getCurrentUser(): User | null {
 export function setCurrentUser(user: User | null) {
   if (typeof window !== "undefined") {
     if (user) {
+      console.log("Setting current user: on local storage")
       localStorage.setItem("currentUser", JSON.stringify(user))
     } else {
       localStorage.removeItem("currentUser")
@@ -173,19 +180,19 @@ export function login(email: string, password: string): User | null {
   return null
 }
 
-export function register(email: string, password: string, name: string): User {
-  const newUser: User = {
-    id: Date.now().toString(),
-    email,
-    name,
-    isAdmin: false,
-    subscriptionStatus: "trial",
-    trialVideosWatched: 0,
-    maxTrialVideos: 3,
-  }
+
+
+
+export async function  register(email: string, password: string, name: string): Promise<User> {
+
+  const response = await axiosInstance.post("/users/register", { email, password, name })
+  const newUser: User = response.data
+
   setCurrentUser(newUser)
   return newUser
 }
+
+
 
 export function logout() {
   setCurrentUser(null)

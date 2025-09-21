@@ -168,7 +168,7 @@ export default function HomePage() {
             <span className="font-semibold">EduLearn</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2024 EduLearn. All rights reserved. Empowering education through technology.
+            © 2025 EduLearn. All rights reserved. Empowering education through technology.
           </p>
         </div>
       </footer>

@@ -2,13 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "react-hot-toast"
 import { register } from "@/lib/auth"
 
 interface RegisterFormProps {
@@ -24,6 +24,12 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error, { duration: 5000 })
+    }
+  }, [error])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -31,38 +37,40 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
     // Validation
     if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill in all fields")
+      toast.error("Please fill in all fields", { duration: 5000 })
       setIsLoading(false)
       return
     }
 
     if (!email.includes("@")) {
-      setError("Please enter a valid email address")
+      toast.error("Please enter a valid email address", { duration: 5000 })
+
       setIsLoading(false)
       return
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long")
+      toast.error("Password must be at least 6 characters long", { duration: 5000 })
       setIsLoading(false)
       return
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
+      toast.error("Passwords do not match", { duration: 5000 })
       setIsLoading(false)
       return
     }
 
     try {
-      const user = register(email, password, name)
+      const user = await register(email, password, name) // add await
       onSuccess?.()
       router.push("/dashboard")
-    } catch (err) {
-      setError("Registration failed. Please try again.")
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Registration failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
+    
   }
 
   return (
@@ -73,18 +81,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
 
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input
               id="name"
               type="text"
-              placeholder="John Doe"
+              placeholder="Enter your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -96,7 +99,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             <Input
               id="email"
               type="email"
-              placeholder="john@example.com"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -127,7 +130,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full hover:cursor-pointer" disabled={isLoading}>
             {isLoading ? "Creating Account..." : "Sign Up"}
           </Button>
         </form>

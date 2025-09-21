@@ -6,11 +6,11 @@ import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Suspense } from "react"
 import "./globals.css"
+import { Toaster } from "react-hot-toast"
 
 export const metadata: Metadata = {
   title: "EduLearn - Video Learning Platform",
   description: "Premium video courses for Natural and Social sciences",
-  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -27,6 +27,7 @@ export default function RootLayout({
           </ThemeProvider>
         </Suspense>
         <Analytics />
+        <Toaster />
       </body>
     </html>
   )
