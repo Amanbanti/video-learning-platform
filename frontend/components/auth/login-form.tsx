@@ -103,7 +103,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         </form>
 
         <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p>Demo credentials:</p>
+          <p>Demo credentialss:</p>
           <p>Student: student@example.com / student123</p>
           <p>Admin: admin@edulearn.com / admin123</p>
         </div>
