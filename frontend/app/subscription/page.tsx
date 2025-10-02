@@ -4,16 +4,17 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { Button } from "../../components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Badge } from "../../components/ui/badge"
+import { Input } from "../../components/ui/input"
+import { Label } from "../../components/ui/label"
+import { Textarea } from "../../components/ui/textarea"
+import { Alert, AlertDescription } from "../../components/ui/alert"
+import { ThemeToggle } from "../../components/theme-toggle"
 import { BookOpen, LogOut, ArrowLeft, Check, Upload, CreditCard, Smartphone, AlertCircle } from "lucide-react"
-import { getCurrentUser, logout, setCurrentUser } from "@/lib/auth"
+import { getCurrentUser, logout, setCurrentUser } from "../../lib/auth"
+import Header from "../../components/Header"
 
 export default function SubscriptionPage() {
   const [user, setUser] = useState(getCurrentUser())
@@ -91,30 +92,7 @@ export default function SubscriptionPage() {
     return (
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard")}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-xl font-bold">EduLearn</span>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <ThemeToggle />
-              <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
-              <Button variant="outline" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </header>
+        <Header />
 
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-2xl mx-auto text-center">
@@ -141,30 +119,7 @@ export default function SubscriptionPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard")}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">EduLearn</span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
