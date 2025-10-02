@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const userSchema = mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -21,28 +21,53 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // ✅ Verification
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationCode: {
+      type: String,
+    },
+    verificationCodeExpires: {
+      type: Date, // expiry timestamp
+    },
+
+    // ✅ Education level
+    freshOrRemedial: {
+      type: String,
+      enum: ["Fresh Man", "Remedial"],
+      required: true,
+    },
+    naturalOrSocial: {
+      type: String,
+      enum: ["Natural", "Social"],
+      required: true,
+    },
+
+    // ✅ Subscription
     subscriptionStatus: {
       type: String,
-      enum: ["none","trial", "pending", "active"],
-      default: "none",
+      enum: ["none", "trial", "pending", "active"],
+      default: "trial",
     },
     trialVideosWatched: {
       type: Number,
       default: 0,
     },
     maxTrialVideos: {
-      type: Number, // limit of free trial videos
+      type: Number,
       default: 3,
     },
     paymentReceipt: {
-      type: String, // store URL or file path of uploaded receipt
+      type: String, // URL or file path
     },
   },
   {
     timestamps: true,
   }
 );
-
 
 userSchema.methods.matchPassword =async function(enteredPassword){
   return await bcrypt.compare(enteredPassword,this.password);
