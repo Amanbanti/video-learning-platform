@@ -3,12 +3,12 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "../../components/ui/button"
+import { Input } from "../../components/ui/input"
+import { Label } from "../../components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { toast } from "react-hot-toast"
-import { register, verifyOtp } from "@/lib/auth"
+import { getCurrentUser, register, verifyOtp } from "../../lib/auth"
 import { Eye, EyeOff } from 'lucide-react';
 
 interface RegisterFormProps {
@@ -17,6 +17,8 @@ interface RegisterFormProps {
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
+
+  const user = getCurrentUser()
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -37,7 +39,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     if (error) {
       toast.error(error, { duration: 5000 })
     }
-  }, [error])
+    if(user){
+      router.push(user.isAdmin ? "/admin" : "/dashboard")
+    }
+  }, [error,user,router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
