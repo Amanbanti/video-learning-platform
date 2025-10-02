@@ -54,7 +54,7 @@ export default function HomePage() {
                 <Button onClick={handleGetStarted}>{user.isAdmin ? "Admin Panel" : "Dashboard"}</Button>
               </div>
             ) : (
-              <Button onClick={() => router.push("/auth")}>Sign In</Button>
+              <Button className="cursor-pointer" onClick={() => router.push("/auth")}>Sign In</Button>
             )}
           </div>
         </div>

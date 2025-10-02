@@ -183,14 +183,37 @@ export function login(email: string, password: string): User | null {
 
 
 
-export async function  register(email: string, password: string, name: string): Promise<User> {
-
-  const response = await axiosInstance.post("/users/register", { email, password, name })
-  const newUser: User = response.data
-
-  setCurrentUser(newUser)
-  return newUser
+// Step 1–3: register and send OTP
+export async function register(
+  email: string,
+  password: string,
+  name: string,
+  freshOrRemedial: string,
+  naturalOrSocial: string
+) {
+  const res = await axiosInstance.post("/users/register", {
+    email,
+    password,
+    name,
+    freshOrRemedial,
+    naturalOrSocial,
+  });
+ 
+  return res.data;
 }
+
+
+
+// Step 4: verify OTP
+export async function verifyOtp(email: string, otp: string) {
+  const res = await axiosInstance.post("/users/verify-otp", {
+    email,
+    otp,
+  });
+  setCurrentUser(res.data.user);
+  return res.data;
+}
+
 
 
 
