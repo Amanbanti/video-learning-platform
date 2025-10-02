@@ -120,24 +120,23 @@ export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }); // make sure password is included
     if (!user) return res.status(400).json({ message: "Invalid email or password" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      subscriptionStatus: user.subscriptionStatus,
-      demoTrialUsed: user.demoTrialUsed,
-      token: generateToken(user),
-    });
+    // User exists, generate token
+    generateToken(res, user);
+
+    res.status(200).json({ user });
   } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+
+
 
 export const logoutUser = (req, res) => {
   res.cookie('jwt', '', {
@@ -146,6 +145,9 @@ export const logoutUser = (req, res) => {
   });
   res.json({ message: 'Logged out successfully' });
 }
+
+
+
 
 // @desc    Upload payment receipt
 // @route   PUT /api/users/:id/receipt
