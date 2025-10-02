@@ -1,9 +1,10 @@
 import express from "express";
-import { registerUser, loginUser, uploadReceipt } from "../controllers/userController.js";
+import { registerUser, loginUser, uploadReceipt ,verifyOtp } from "../controllers/userController.js";
 
 const router = express.Router();
 
 router.post("/register", registerUser);
+router.post("/verify-otp", verifyOtp);
 router.post("/login", loginUser);
 router.put("/:id/receipt", uploadReceipt);
 
