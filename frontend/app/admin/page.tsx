@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { BookOpen, LogOut, Users, Video, CreditCard, Plus, Eye, Edit, Trash2, Check, X } from "lucide-react"
-import { getCurrentUser, logout, mockCourses, type PaymentRequest } from "@/lib/auth"
+import { Button } from "../../components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Badge } from "../../components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { Users, Video, CreditCard, Plus, Eye, Edit, Trash2, Check, X } from "lucide-react"
+import { getCurrentUser, mockCourses, type PaymentRequest } from "../../lib/auth"
+import Header from "../../components/Header"
 
 // Mock payment requests data
 const mockPaymentRequests: PaymentRequest[] = [
@@ -58,10 +58,7 @@ export default function AdminPage() {
     }
   }, [user, router])
 
-  const handleLogout = () => {
-    logout()
-    router.push("/")
-  }
+
 
   const handlePaymentAction = (requestId: string, action: "approve" | "reject") => {
     setPaymentRequests((prev) =>
@@ -82,25 +79,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-              <BookOpen className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">EduLearn Admin</span>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="container mx-auto px-4 py-8">
         {/* Dashboard Stats */}
