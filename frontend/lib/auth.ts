@@ -168,17 +168,19 @@ export function setCurrentUser(user: User | null) {
   }
 }
 
-export function login(email: string, password: string): User | null {
-  // Mock login logic
-  if (email === "admin@edulearn.com" && password === "admin123") {
-    setCurrentUser(mockAdmin)
-    return mockAdmin
-  } else if (email === "student@example.com" && password === "student123") {
-    setCurrentUser(mockUser)
-    return mockUser
-  }
-  return null
+
+export async function login(email: string, password: string): Promise<User | null> {
+  const res = await axiosInstance.post(
+    "/users/login",
+    { email, password },
+    { withCredentials: true } // needed if JWT cookie is set
+  );
+
+  
+  setCurrentUser(res.data.user);
+  return res.data;
 }
+
 
 
 
@@ -217,6 +219,9 @@ export async function verifyOtp(email: string, otp: string) {
 
 
 
-export function logout() {
+export async function logout() {
   setCurrentUser(null)
+  const res = await axiosInstance.post("/users/logout")
+  return res.data
+
 }
