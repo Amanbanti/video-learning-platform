@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { LoginForm } from "@/components/auth/login-form"
-import { RegisterForm } from "@/components/auth/register-form"
-import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { LoginForm } from "../../components/auth/login-form"
+import { RegisterForm } from "../../components/auth/register-form"
+import { Button } from "../../components/ui/button"
+import { ThemeToggle } from "../../components/theme-toggle"
 import { BookOpen, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
@@ -36,7 +36,7 @@ export default function AuthPage() {
             <p className="text-sm text-muted-foreground">
               {isLogin ? "Don't have an account?" : "Already have an account?"}
             </p>
-            <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="p-0 h-auto font-normal">
+            <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="p-0 h-auto font-normal cursor-pointer">
               {isLogin ? "Sign up here" : "Sign in here"}
             </Button>
           </div>
