@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/ta
 import { Users, Video, CreditCard, Plus, Eye, Edit, Trash2, Check, X } from "lucide-react"
 import { getCurrentUser, mockCourses, type PaymentRequest } from "../../lib/auth"
 import Header from "../../components/Header"
+import AddCourseDialog from "../../components/AddCourseDialog"
 
 // Mock payment requests data
 const mockPaymentRequests: PaymentRequest[] = [
@@ -209,10 +210,7 @@ export default function AdminPage() {
                 <h2 className="text-2xl font-bold">Course Management</h2>
                 <p className="text-muted-foreground">Manage your course library</p>
               </div>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Course
-              </Button>
+              <AddCourseDialog/>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -221,13 +219,13 @@ export default function AdminPage() {
                   <CardHeader className="pb-4">
                     <div className="h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                       <img
-                        src={course.thumbnail || "/placeholder.svg"}
+                        src={course.coverImage || "/placeholder.svg"}
                         alt={course.title}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <Badge variant={course.category === "natural" ? "default" : "secondary"} className="w-fit">
-                      {course.category === "natural" ? "Natural" : "Social"}
+                    <Badge className="w-fit">
+                      {course.category}
                     </Badge>
                     <CardTitle className="text-lg">{course.title}</CardTitle>
                     <CardDescription className="line-clamp-2">{course.description}</CardDescription>
@@ -235,7 +233,6 @@ export default function AdminPage() {
                   <CardContent>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm text-muted-foreground">{course.chapters.length} chapters</span>
-                      {course.isPremium && <Badge variant="outline">Premium</Badge>}
                     </div>
                     <div className="flex space-x-2">
                       <Button size="sm" variant="outline" className="flex-1 bg-transparent">
