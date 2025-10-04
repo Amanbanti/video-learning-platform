@@ -11,6 +11,15 @@ import { toast } from "react-hot-toast"
 import { getCurrentUser, register, verifyOtp } from "../../lib/auth"
 import { Eye, EyeOff } from 'lucide-react';
 
+
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "../../components/ui/input-otp"
+
+
 interface RegisterFormProps {
   onSuccess?: () => void
 }
@@ -245,19 +254,31 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             </div>
           )}
 
-          {step === 4 && (
-            <div className="space-y-2">
-              <Label htmlFor="verificationCode">Verification Code</Label>
-              <Input
-                id="verificationCode"
-                type="text"
-                placeholder="Enter the code"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                required
-              />
-            </div>
-          )}
+        {step === 4 && (
+          <div className="space-y-2">
+            <Label htmlFor="verificationCode">Verification Code</Label>
+            
+            <InputOTP 
+              id="verificationCode"
+              maxLength={6}
+              value={verificationCode}
+              onChange={(value) => setVerificationCode(value)}
+              required
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+              </InputOTPGroup>
+              <InputOTPSeparator />
+              <InputOTPGroup>
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+        )}
 
           <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
             {step === 1 && (isLoading ? "Checking..." : "Next")}

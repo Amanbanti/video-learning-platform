@@ -16,7 +16,7 @@ export default function CoursesPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push("/")
+      router.push("/auth")
       return
     }
 }, [user, router])
