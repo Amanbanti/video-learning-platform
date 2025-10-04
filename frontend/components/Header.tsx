@@ -57,7 +57,7 @@ export const Header = () => {
         try {
         logout()
         toast.success("Logged out successfully", { duration: 3000 })
-        router.push("/")
+        router.push("/auth")
 
         }catch {
             toast.error("Error logging out", { duration: 3000 })
