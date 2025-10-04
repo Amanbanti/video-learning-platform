@@ -95,9 +95,13 @@ export const Header = () => {
                     <MenubarTrigger className="cursor-pointer"><Menu/></MenubarTrigger>
                     <MenubarContent>
                         <MenubarItem disabled><span className="text-sm text-muted-foreground">Welcome, {user.name}</span></MenubarItem>
-                        <MenubarItem className="cursor-pointer" onClick={() => router.push("/")}>
-                                Home
-                        </MenubarItem>
+                        {!user.isAdmin && 
+                             <MenubarItem className="cursor-pointer" onClick={() => router.push("/")}>
+                                  Home
+                          </MenubarItem>
+                        
+                        }
+                       
                         {user.isAdmin ? (
                             <MenubarItem className="cursor-pointer" onClick={() => router.push("/admin")}>
                                 Admin Dashboard

@@ -12,24 +12,30 @@ export interface User {
   paymentReceipt?: string
 }
 
-export interface Course {
-  id: string
-  title: string
-  description: string
-  category: "natural" | "social"
-  thumbnail: string
-  chapters: Chapter[]
-  isPremium: boolean
-}
+export const categoryEnum = [
+  "Natural-FreshMan",
+  "Natural-Remedial",
+  "Social-FreshMan",
+  "Social-Remedial",
+  "Common",
+] as const; // 'as const' makes it a readonly tuple
 
 export interface Chapter {
-  id: string
-  title: string
-  description: string
-  videoUrl: string
-  duration: string
-  isPremium: boolean
+  id: string;
+  title: string;
+  videoUrl: string;
 }
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  instructor: string;
+  coverImage: string;
+  category: typeof categoryEnum[number]; // picks one of the tuple elements
+  chapters: Chapter[];
+}
+
 
 export interface PaymentRequest {
   id: string
@@ -47,25 +53,19 @@ export const mockCourses: Course[] = [
     id: "1",
     title: "Applied Mathematics 1",
     description: "Comprehensive course covering calculus, linear algebra, and differential equations",
-    category: "natural",
-    thumbnail: "/mathematics-textbook.png",
-    isPremium: true,
+    instructor: "Dr. John Smith",
+    coverImage: "/mathematics-textbook.png",
+    category: "Natural-FreshMan",
     chapters: [
       {
         id: "1-1",
         title: "Introduction to Calculus",
-        description: "Basic concepts of limits and derivatives",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-        duration: "45:30",
-        isPremium: false,
       },
       {
         id: "1-2",
         title: "Advanced Derivatives",
-        description: "Chain rule, product rule, and applications",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-        duration: "52:15",
-        isPremium: true,
       },
     ],
   },
@@ -73,17 +73,14 @@ export const mockCourses: Course[] = [
     id: "2",
     title: "Physics Fundamentals",
     description: "Core principles of mechanics, thermodynamics, and electromagnetism",
-    category: "natural",
-    thumbnail: "/physics-laboratory.png",
-    isPremium: true,
+    instructor: "Prof. Alice Brown",
+    coverImage: "/physics-laboratory.png",
+    category: "Natural-Remedial",
     chapters: [
       {
         id: "2-1",
         title: "Newton's Laws",
-        description: "Understanding motion and forces",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-        duration: "38:45",
-        isPremium: false,
       },
     ],
   },
@@ -91,17 +88,14 @@ export const mockCourses: Course[] = [
     id: "3",
     title: "World History",
     description: "From ancient civilizations to modern times",
-    category: "social",
-    thumbnail: "/ancient-history-books.jpg",
-    isPremium: true,
+    instructor: "Dr. Emma Davis",
+    coverImage: "/ancient-history-books.jpg",
+    category: "Social-FreshMan",
     chapters: [
       {
         id: "3-1",
         title: "Ancient Civilizations",
-        description: "Egypt, Mesopotamia, and the Indus Valley",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-        duration: "41:20",
-        isPremium: false,
       },
     ],
   },
@@ -109,17 +103,14 @@ export const mockCourses: Course[] = [
     id: "4",
     title: "Psychology Basics",
     description: "Introduction to human behavior and mental processes",
-    category: "social",
-    thumbnail: "/psychology-brain-illustration.jpg",
-    isPremium: true,
+    instructor: "Prof. Michael Lee",
+    coverImage: "/psychology-brain-illustration.jpg",
+    category: "Social-Remedial",
     chapters: [
       {
         id: "4-1",
         title: "Cognitive Psychology",
-        description: "How we think, learn, and remember",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-        duration: "35:10",
-        isPremium: false,
       },
     ],
   },
