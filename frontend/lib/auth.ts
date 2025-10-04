@@ -125,28 +125,7 @@ export const mockCourses: Course[] = [
   },
 ]
 
-// Mock user data
-export const mockUser: User = {
-  id: "1",
-  email: "student@example.com",
-  name: "John Doe",
-  password: "student123",
-  isAdmin: false,
-  subscriptionStatus: "trial",
-  trialVideosWatched: 2,
-  maxTrialVideos: 3,
-}
 
-export const mockAdmin: User = {
-  id: "admin",
-  email: "admin@edulearn.com",
-  name: "Admin User",
-  password: "admin123",
-  isAdmin: true,
-  subscriptionStatus: "active",
-  trialVideosWatched: 0,
-  maxTrialVideos: 0,
-}
 
 // Auth functions
 export function getCurrentUser(): User | null {

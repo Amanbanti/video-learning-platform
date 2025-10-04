@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { Button } from "../components/ui/button"
 import { ThemeToggle } from "../components/theme-toggle"
 import { BookOpen, ArrowLeft, LogIn,Menu, LogOut } from "lucide-react"
@@ -9,7 +9,6 @@ import { getCurrentUser, logout } from "../lib/auth"
 import Link from "next/link"
 import toast from "react-hot-toast"
 
-import { Navigation } from "lucide-react"
 
 
 import {
@@ -18,10 +17,6 @@ import {
     MenubarItem,
     MenubarMenu,
     MenubarSeparator,
-    MenubarShortcut,
-    MenubarSub,
-    MenubarSubContent,
-    MenubarSubTrigger,
     MenubarTrigger,
   } from "../components/ui/menubar"
 
@@ -30,6 +25,8 @@ export const Header = () => {
 
     const [user, setUser] = useState(getCurrentUser())
     const router = useRouter()
+    const pathname = usePathname()
+
   
     useEffect(() => {
       const handleStorageChange = () => {
@@ -41,14 +38,20 @@ export const Header = () => {
     }, [])
   
 
-
     useEffect(() => {
-        if (!user) {
-          router.push("/")
-          return
+      if (!user) {
+        // Guest: allow "/" and "/auth", else redirect to /auth
+        if (pathname !== "/" && pathname !== "/auth") {
+          router.push("/auth")
         }
-    }, [user, router])
-
+      } else {
+        // Logged-in user
+        if (user.isAdmin === true && pathname === "/") {
+          router.push("/admin") // block admin from landing page
+        }
+      }
+    }, [user, pathname, router])
+    
     
     const handleLogout = () => {
         try {
