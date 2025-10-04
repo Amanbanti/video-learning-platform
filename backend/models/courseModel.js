@@ -19,6 +19,7 @@ const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
   instructor: { type: String, required: true },
+  coverImageUrl: { type: String,required: true },
   category: { type: String, required: true, enum: categoryEnum }, 
   chapters: [chapterSchema], // array of chapters
   createdAt: { type: Date, default: Date.now },
