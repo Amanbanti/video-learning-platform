@@ -22,18 +22,25 @@ app.use(cors({
   credentials: true,
 }));
 
+// Set __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 // Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+
+// Serve uploads folder statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 // API Routes
 app.use('/api/users', userRoutes);
 app.use("/api/courses", courseRoutes);
 
-// Set __dirname for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
