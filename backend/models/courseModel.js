@@ -11,6 +11,7 @@ const categoryEnum = [
 const chapterSchema = new mongoose.Schema({
   title: { type: String, required: true },
   videoUrl: { type: String, required: true },
+  duration: { type: Number, required: true }, // in minutes
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

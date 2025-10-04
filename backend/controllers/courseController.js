@@ -1,16 +1,43 @@
-import Course from "../models/course.js";
+import Course from "../models/courseModel.js";
 
-// @desc    Get all courses
+// @desc    Get all courses with category filter + pagination
 // @route   GET /api/courses
 // @access  Public
 export const getCourses = async (req, res) => {
-  try {
-    const courses = await Course.find();
-    res.status(200).json(courses);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+    try {
+      const { category, page = 1, limit = 10 } = req.query;
+  
+      // Build filter object
+      const filter = {};
+      if (category) {
+        filter.category = category;
+      }
+  
+      // Convert to numbers (query params are strings)
+      const pageNum = parseInt(page, 10) || 1;
+      const limitNum = parseInt(limit, 10) || 10;
+  
+      // Query DB
+      const courses = await Course.find(filter)
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum)
+        .sort({ createdAt: -1 }); // newest first
+  
+      // Count total for pagination metadata
+      const total = await Course.countDocuments(filter);
+  
+      res.status(200).json({
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        courses,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
 
 // @desc    Get single course by ID
 // @route   GET /api/courses/:id
@@ -38,6 +65,9 @@ export const createCourse = async (req, res) => {
       }
   
       const coverImageUrl = req.file.path; // saved file path
+
+      const uniqeTitle = await Course.findOne({title})
+      if(uniqeTitle) return res.status(400).json({message:"Course with this title already exists!"})
   
       const newCourse = new Course({
         title,
