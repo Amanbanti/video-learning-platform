@@ -8,12 +8,19 @@ const categoryEnum = [
   "Common",
 ];
 
+const chapterSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  videoUrl: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
 const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  description: { type: String,required: true },
+  description: { type: String },
   instructor: { type: String, required: true },
   category: { type: String, required: true, enum: categoryEnum }, 
-  videoUrl: { type: String },
+  chapters: [chapterSchema], // array of chapters
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
