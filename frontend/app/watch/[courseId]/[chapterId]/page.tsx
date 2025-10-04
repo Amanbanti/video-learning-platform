@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { Button } from "../../../../components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../components/ui/card"
+import { ThemeToggle } from "../../../../components/theme-toggle"
 import { BookOpen, LogOut, ArrowLeft, Play, Pause, Volume2, Maximize, SkipBack, SkipForward } from "lucide-react"
-import { getCurrentUser, logout, mockCourses, type Course, type Chapter, setCurrentUser } from "@/lib/auth"
+import { getCurrentUser, logout, setCurrentUser } from "../../../../lib/auth"
+import {mockCourses, type Course, type Chapter, } from "../../../../lib/course"
 
 export default function WatchPage() {
   const [user, setUser] = useState(getCurrentUser())
@@ -33,15 +34,15 @@ export default function WatchPage() {
     setCourse(foundCourse || null)
     setChapter(foundChapter || null)
 
-    // Update trial videos watched if this is a premium chapter and user is on trial
-    if (foundChapter?.isPremium && user.subscriptionStatus === "trial") {
-      const updatedUser = {
-        ...user,
-        trialVideosWatched: Math.min(user.trialVideosWatched + 1, user.maxTrialVideos),
-      }
-      setCurrentUser(updatedUser)
-      setUser(updatedUser)
-    }
+    // // Update trial videos watched if this is a premium chapter and user is on trial
+    // if (foundChapter?.isPremium && user.subscriptionStatus === "trial") {
+    //   const updatedUser = {
+    //     ...user,
+    //     trialVideosWatched: Math.min(user.trialVideosWatched + 1, user.maxTrialVideos),
+    //   }
+    //   setCurrentUser(updatedUser)
+    //   setUser(updatedUser)
+    // }
   }, [user, courseId, chapterId, router])
 
   const handleLogout = () => {
@@ -237,11 +238,11 @@ export default function WatchPage() {
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>{chapter.title}</CardTitle>
-                <CardDescription>{chapter.description}</CardDescription>
+                {/* <CardDescription>{chapter.description}</CardDescription> */}
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>Duration: {chapter.duration}</span>
+                  {/* <span>Duration: {chapter.}</span> */}
                   <span>Course: {course.title}</span>
                 </div>
               </CardContent>
@@ -278,7 +279,8 @@ export default function WatchPage() {
                             ch.id === chapterId ? "text-primary-foreground/80" : "text-muted-foreground"
                           }`}
                         >
-                          {ch.duration}
+                          33
+                          {/* {ch.duration} */}
                         </div>
                       </div>
                     </div>

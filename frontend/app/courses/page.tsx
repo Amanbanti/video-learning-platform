@@ -6,7 +6,8 @@ import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { BookOpen, Play, Clock } from "lucide-react"
-import { getCurrentUser, mockCourses } from "../../lib/auth"
+import { getCurrentUser} from "../../lib/auth"
+import {mockCourses} from "../../lib/course"
 import Header from "../../components/Header"
 export default function CoursesPage() {
   const [user, setUser] = useState(getCurrentUser())
@@ -27,7 +28,7 @@ export default function CoursesPage() {
 
   if (!user) return null
 
-  const filteredCourses = category ? mockCourses.filter((course) => course.category === category) : mockCourses
+  // const filteredCourses = category ? mockCourses.filter((course) => course.category === category) : mockCourses
 
   const categoryTitle =
     category === "natural" ? "Natural Sciences" : category === "social" ? "Social Sciences" : "All Courses"
@@ -50,7 +51,7 @@ export default function CoursesPage() {
 
         {/* Courses Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
+          {mockCourses.map((course) => (
             <Card
               key={course.id}
               className="cursor-pointer hover:shadow-lg transition-all duration-300 group"
@@ -59,16 +60,16 @@ export default function CoursesPage() {
               <CardHeader className="pb-4">
                 <div className="h-40 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                   <img
-                    src={course.thumbnail || "/placeholder.svg"}
+                    src={course.coverImageUrl || "/placeholder.svg"}
                     alt={course.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <div className="flex items-center justify-between mb-2">
-                  <Badge variant={course.category === "natural" ? "default" : "secondary"}>
-                    {course.category === "natural" ? "Natural" : "Social"}
+                  <Badge >
+                    {course.category}
                   </Badge>
-                  {course.isPremium && <Badge variant="outline">Premium</Badge>}
+                  {course && <Badge variant="outline">Premium</Badge>}
                 </div>
                 <CardTitle className="text-lg group-hover:text-primary transition-colors">{course.title}</CardTitle>
                 <CardDescription className="line-clamp-2">{course.description}</CardDescription>
@@ -82,13 +83,13 @@ export default function CoursesPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      <span>
+                      {/* <span>
                         {course.chapters.reduce((total, chapter) => {
                           const [minutes] = chapter.duration.split(":").map(Number)
                           return total + minutes
                         }, 0)}
                         m
-                      </span>
+                      </span> */}
                     </div>
                   </div>
                 </div>
@@ -101,7 +102,7 @@ export default function CoursesPage() {
           ))}
         </div>
 
-        {filteredCourses.length === 0 && (
+        {mockCourses.length === 0 && (
           <div className="text-center py-12">
             <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No courses found</h3>

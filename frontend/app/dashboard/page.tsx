@@ -7,7 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
 import { BookOpen, Play, Clock, Star } from "lucide-react"
-import { getCurrentUser, mockCourses } from "../../lib/auth"
+import { getCurrentUser } from "../../lib/auth"
+import { mockCourses } from "../../lib/course"
+
 import Header from "../../components/Header"
 
 export default function DashboardPage() {
@@ -91,7 +93,7 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      {mockCourses.filter((c) => c.category === "natural").length} Courses
+                      2 Courses
                     </span>
                   </div>
                   <Badge variant="secondary">Popular</Badge>
@@ -124,7 +126,7 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      {mockCourses.filter((c) => c.category === "social").length} Courses
+                     2 Courses
                     </span>
                   </div>
                   <Badge variant="secondary">New</Badge>

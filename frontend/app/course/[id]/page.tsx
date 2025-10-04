@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { Button } from "../../../components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
+import { Badge } from "../../../components/ui/badge"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../..//components/ui/accordion"
+import { ThemeToggle } from "../../../components/theme-toggle"
 import { BookOpen, LogOut, Play, Clock, ArrowLeft, Lock } from "lucide-react"
-import { getCurrentUser, logout, mockCourses, type Course, type Chapter } from "@/lib/auth"
+import { getCurrentUser, logout } from "../../../lib/auth"
+import { mockCourses, type Course, type Chapter } from "../../../lib/course"
 
 export default function CoursePage() {
   const [user, setUser] = useState(getCurrentUser())
@@ -37,12 +38,12 @@ export default function CoursePage() {
     if (!chapter) return
 
     // Check if user can access this chapter
-    if (chapter.isPremium && user?.subscriptionStatus === "trial") {
-      if (user.trialVideosWatched >= user.maxTrialVideos) {
-        router.push("/subscription")
-        return
-      }
-    }
+    // if (chapter.isPremium && user?.subscriptionStatus === "trial") {
+    //   if (user.trialVideosWatched >= user.maxTrialVideos) {
+    //     router.push("/subscription")
+    //     return
+    //   }
+    // }
 
     router.push(`/watch/${courseId}/${chapterId}`)
   }
@@ -61,7 +62,7 @@ export default function CoursePage() {
   }
 
   const canAccessChapter = (chapter: Chapter) => {
-    if (!chapter.isPremium) return true
+    // if (!chapter.isPremium) return true
     if (user.subscriptionStatus === "active") return true
     if (user.subscriptionStatus === "trial" && user.trialVideosWatched < user.maxTrialVideos) return true
     return false
@@ -99,10 +100,10 @@ export default function CoursePage() {
         {/* Course Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <Badge variant={course.category === "natural" ? "default" : "secondary"}>
-              {course.category === "natural" ? "Natural Sciences" : "Social Sciences"}
+            <Badge >
+              {course.category}
             </Badge>
-            {course.isPremium && <Badge variant="outline">Premium Course</Badge>}
+           
           </div>
 
           <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
@@ -115,13 +116,13 @@ export default function CoursePage() {
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              <span>
+              {/* <span>
                 {course.chapters.reduce((total, chapter) => {
                   const [minutes] = chapter.duration.split(":").map(Number)
                   return total + minutes
                 }, 0)}{" "}
                 minutes total
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
@@ -151,8 +152,8 @@ export default function CoursePage() {
                               <div className="font-medium">{chapter.title}</div>
                               <div className="text-sm text-muted-foreground flex items-center gap-2">
                                 <Clock className="h-3 w-3" />
-                                {chapter.duration}
-                                {chapter.isPremium && (
+                                {/* {chapter.duration} */22}
+                                {true && (
                                   <>
                                     <Lock className="h-3 w-3" />
                                     <span>Premium</span>
@@ -165,7 +166,7 @@ export default function CoursePage() {
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="pt-4 pl-11">
-                          <p className="text-muted-foreground mb-4">{chapter.description}</p>
+                          {/* <p className="text-muted-foreground mb-4">{chapter.description}</p> */}
                           <Button
                             onClick={() => handleChapterSelect(chapter.id)}
                             disabled={!canAccessChapter(chapter)}
@@ -221,11 +222,11 @@ export default function CoursePage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Free Chapters</span>
-                  <span className="font-medium">{course.chapters.filter((c) => !c.isPremium).length}</span>
+                  {/* <span className="font-medium">{course.chapters.filter((c) => !c.isPremium).length}</span> */}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Premium Chapters</span>
-                  <span className="font-medium">{course.chapters.filter((c) => c.isPremium).length}</span>
+                  {/* <span className="font-medium">{course.chapters.filter((c) => c.isPremium).length}</span> */}
                 </div>
               </CardContent>
             </Card>

@@ -7,9 +7,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { Badge } from "../../components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 import { Users, Video, CreditCard, Plus, Eye, Edit, Trash2, Check, X } from "lucide-react"
-import { getCurrentUser, mockCourses, type PaymentRequest } from "../../lib/auth"
+import { mockCourses, type PaymentRequest } from "../../lib/course"
+import { getCurrentUser } from "../../lib/auth"
+import Link from "next/link"
+
 import Header from "../../components/Header"
 import AddCourseDialog from "../../components/AddCourseDialog"
+
+import { toast } from "react-hot-toast"
+import {fetchCourses} from "../../lib/course"
+import DashboardStats from "../../components/DashboardStats"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import  CourseCardSkeleton  from "../../components/CourseCardSkeleton"
+import { Label } from "recharts"
+
 
 // Mock payment requests data
 const mockPaymentRequests: PaymentRequest[] = [
@@ -42,9 +53,52 @@ const mockPaymentRequests: PaymentRequest[] = [
   },
 ]
 
+
+
+// Category enum as a readonly tuple
+export const categoryEnum = [
+  "Natural-FreshMan",
+  "Natural-Remedial",
+  "Social-FreshMan",
+  "Social-Remedial",
+  "Common",
+] as const;
+
+export type CategoryEnum = typeof categoryEnum[number];
+
+// Chapter interface
+export interface Chapter {
+  id: string;
+  title: string;
+  videoUrl: string;
+}
+
+// Course interface
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  instructor: string;
+  coverImageUrl: string;
+  category: CategoryEnum;
+  chapters: Chapter[];
+}
+
 export default function AdminPage() {
+
+
   const [user, setUser] = useState(getCurrentUser())
   const [paymentRequests, setPaymentRequests] = useState(mockPaymentRequests)
+
+  const [activeTab, setActiveTab] = useState("payments");
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(false);
+
+
+  const [coursePage, setCoursePage] = useState(1); // pagination
+  const [category, setCategory] = useState(""); 
+
+
   const router = useRouter()
 
   useEffect(() => {
@@ -61,6 +115,35 @@ export default function AdminPage() {
 
 
 
+  useEffect(() => {
+    if (activeTab === "courses") {
+      const load = async () => {
+        try {
+          if(category === "all") {
+            setCategory("")
+
+          }
+          setLoading(true);
+          // Simulate loading delay
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          setLoading(false);
+
+          const courses = await fetchCourses(coursePage, 10, category);
+          setCourses(courses);
+        } catch (err) {
+          toast.error("Error fetching courses. Please try again.");
+          console.error("Error fetching courses:", err);
+        }finally {
+          setLoading(false);
+        }
+      };
+      load();
+    }
+  }, [activeTab, coursePage, category]);
+  
+
+
+
   const handlePaymentAction = (requestId: string, action: "approve" | "reject") => {
     setPaymentRequests((prev) =>
       prev.map((req) =>
@@ -71,11 +154,6 @@ export default function AdminPage() {
 
   if (!user || !user.isAdmin) return null
 
-  const pendingPayments = paymentRequests.filter((req) => req.status === "pending")
-  const totalUsers = 156 // Mock data
-  const totalRevenue = paymentRequests
-    .filter((req) => req.status === "approved")
-    .reduce((sum, req) => sum + req.amount, 0)
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,58 +162,15 @@ export default function AdminPage() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Dashboard Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalUsers}</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
-              <Video className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{mockCourses.length}</div>
-              <p className="text-xs text-muted-foreground">Across all categories</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pendingPayments.length}</div>
-              <p className="text-xs text-muted-foreground">Awaiting approval</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalRevenue.toLocaleString()} ETB</div>
-              <p className="text-xs text-muted-foreground">From approved payments</p>
-            </CardContent>
-          </Card>
-        </div>
+        <DashboardStats />
+       
 
         {/* Main Content */}
-        <Tabs defaultValue="payments" className="space-y-6">
+        <Tabs  value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="payments">Payment Requests</TabsTrigger>
-            <TabsTrigger value="courses">Course Management</TabsTrigger>
-            <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="payments">Payment Requests</TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="courses">Course Management</TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="users">User Management</TabsTrigger>
           </TabsList>
 
           {/* Payment Requests Tab */}
@@ -208,49 +243,92 @@ export default function AdminPage() {
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-bold">Course Management</h2>
-                <p className="text-muted-foreground">Manage your course library</p>
+                <p className="text-muted-foreground">Manage your course </p>
               </div>
+
+              {/* Category Filter */}
+              <div className="w-48">
+                  <Select value={category} onValueChange={setCategory} required>
+                  <SelectTrigger id="category" className="w-full cursor-pointer">
+                    <SelectValue placeholder="Search by Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem key={0} value={"all"}  className="cursor-pointer">
+                      All Courses
+                      </SelectItem>
+                    {categoryEnum.map((cat) => (
+                      <SelectItem key={cat} value={cat}  className="cursor-pointer">
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                </div>
+              
+
               <AddCourseDialog/>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockCourses.map((course) => (
-                <Card key={course.id}>
-                  <CardHeader className="pb-4">
-                    <div className="h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                      <img
-                        src={course.coverImage || "/placeholder.svg"}
-                        alt={course.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <Badge className="w-fit">
-                      {course.category}
-                    </Badge>
-                    <CardTitle className="text-lg">{course.title}</CardTitle>
-                    <CardDescription className="line-clamp-2">{course.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm text-muted-foreground">{course.chapters.length} chapters</span>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline" className="flex-1 bg-transparent">
-                        <Eye className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex-1 bg-transparent">
-                        <Edit className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button size="sm" variant="destructive">
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  {loading ? (
+                    <CourseCardSkeleton />
+                  ) : (
+                    coursePage === 1 && courses.length === 0 ? (
+                      <div className="col-span-3 text-center text-muted-foreground">
+                        No courses found. Try adding some courses.
+                      </div>
+                    ) : (
+                      courses.map((course) => {
+                        const imageUrl = course.coverImageUrl?.split("\\").join("/");
+  
+                        return (
+                          <Card key={course.id}>
+                            <CardHeader className="pb-4">
+                              <div className="h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                                <img
+                                  src={imageUrl ? `${process.env.NEXT_PUBLIC_API_URL}/${imageUrl}` : "/placeholder.svg"}
+                                  alt={course.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <span className="text-sm text-muted-foreground">Category:  <Badge className="w-fit">{course.category}</Badge> </span>
+                              <CardTitle className="text-lg">{course.title}</CardTitle>
+                              <CardDescription className="line-clamp-2">{course.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="text-sm text-muted-foreground">{course.chapters.length} chapters</span>
+                              </div>
+                              <div className="flex space-x-2">
+                              <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1 bg-transparent"
+                                  onClick={() => router.push(`/addchapter/${1}`)}
+                                >
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View
+                                </Button>
+
+                                <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                                  <Edit className="h-3 w-3 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })
+               
+                    )
+                   
+                  )}
+                </div>
+
           </TabsContent>
 
           {/* User Management Tab */}
