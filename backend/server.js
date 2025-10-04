@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import userRoutes from "./routes/userRoute.js";
+import courseRoutes from "./routes/courseRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +29,7 @@ app.use(cookieParser());
 
 // API Routes
 app.use('/api/users', userRoutes);
+app.use("/api/courses", courseRoutes);
 
 // Set __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
