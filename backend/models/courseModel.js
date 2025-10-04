@@ -10,7 +10,8 @@ const categoryEnum = [
 
 const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  description: { type: String },
+  description: { type: String,required: true },
+  instructor: { type: String, required: true },
   category: { type: String, required: true, enum: categoryEnum }, 
   videoUrl: { type: String },
   createdAt: { type: Date, default: Date.now },
