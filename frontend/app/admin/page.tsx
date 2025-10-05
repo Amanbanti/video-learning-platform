@@ -75,7 +75,7 @@ export interface Chapter {
 
 // Course interface
 export interface Course {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   instructor: string;
@@ -92,7 +92,7 @@ export default function AdminPage() {
 
   const [activeTab, setActiveTab] = useState("payments");
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [courseLoading, setCourseLoading] = useState(false);
 
 
   const [coursePage, setCoursePage] = useState(1); // pagination
@@ -116,30 +116,35 @@ export default function AdminPage() {
 
 
   useEffect(() => {
-    if (activeTab === "courses") {
-      const load = async () => {
-        try {
-          if(category === "all") {
-            setCategory("")
-
-          }
-          setLoading(true);
-          // Simulate loading delay
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          setLoading(false);
-
-          const courses = await fetchCourses(coursePage, 10, category);
-          setCourses(courses);
-        } catch (err) {
-          toast.error("Error fetching courses. Please try again.");
-          console.error("Error fetching courses:", err);
-        }finally {
-          setLoading(false);
-        }
-      };
-      load();
-    }
+    if (activeTab !== "courses") return;
+  
+    const load = async () => {
+      try {
+        setCourseLoading(true);
+  
+        // Convert "all" to empty string for API
+        const categoryParam = category === "all" ? "" : category;
+  
+        // Simulate delay
+        await new Promise((resolve) => setTimeout(resolve, 500));
+  
+        const fetchedCourses = await fetchCourses(coursePage, 10, categoryParam);
+        setCourses(fetchedCourses);
+      } catch (err) {
+        toast.error("Error fetching courses. Please try again.");
+        console.error("Error fetching courses:", err);
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+  
+    load();
   }, [activeTab, coursePage, category]);
+
+  useEffect(() => {
+    setCoursePage(1); // reset page when category changes
+  }, [category]);
+
   
 
 
@@ -271,19 +276,18 @@ export default function AdminPage() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {loading ? (
-                    <CourseCardSkeleton />
-                  ) : (
-                    coursePage === 1 && courses.length === 0 ? (
-                      <div className="col-span-3 text-center text-muted-foreground">
-                        No courses found. Try adding some courses.
-                      </div>
-                    ) : (
-                      courses.map((course) => {
-                        const imageUrl = course.coverImageUrl?.split("\\").join("/");
+             {courseLoading ? (
+                  <CourseCardSkeleton />
+                ) : courses.length === 0 && coursePage === 1 ? (
+                  <div className="col-span-3 text-center text-muted-foreground">
+                    No courses found. Try adding some courses.
+                  </div>
+                ) : (
+                  courses.map((course) => {
+                    const imageUrl = course.coverImageUrl?.split("\\").join("/");
   
                         return (
-                          <Card key={course.id}>
+                          <Card key={course._id}>
                             <CardHeader className="pb-4">
                               <div className="h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                                 <img
@@ -304,18 +308,18 @@ export default function AdminPage() {
                               <Button
                                   size="sm"
                                   variant="outline"
-                                  className="flex-1 bg-transparent"
-                                  onClick={() => router.push(`/addchapter/${1}`)}
+                                  className="flex-1 bg-transparent cursor-pointer"
+                                  onClick={() => router.push(`/addchapter/${course?._id}`)}
                                 >
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
 
-                                <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                                <Button size="sm" variant="outline" className="flex-1 bg-transparent cursor-pointer">
                                   <Edit className="h-3 w-3 mr-1" />
                                   Edit
                                 </Button>
-                                <Button size="sm" variant="destructive">
+                                <Button size="sm" variant="destructive" className="cursor-pointer">
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
@@ -324,7 +328,7 @@ export default function AdminPage() {
                         );
                       })
                
-                    )
+                  
                    
                   )}
                 </div>

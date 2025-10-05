@@ -4,7 +4,7 @@ import {axiosInstance} from "./axios"
 // Mock data
 export const mockCourses: Course[] = [
   {
-    id: "1",
+    _id: "1",
     title: "Applied Mathematics 1",
     description: "Comprehensive course covering calculus, linear algebra, and differential equations",
     instructor: "Dr. John Smith",
@@ -24,7 +24,7 @@ export const mockCourses: Course[] = [
     ],
   },
   {
-    id: "2",
+    _id: "2",
     title: "Physics Fundamentals",
     description: "Core principles of mechanics, thermodynamics, and electromagnetism",
     instructor: "Prof. Alice Brown",
@@ -39,7 +39,7 @@ export const mockCourses: Course[] = [
     ],
   },
   {
-    id: "3",
+    _id: "3",
     title: "World History",
     description: "From ancient civilizations to modern times",
     instructor: "Dr. Emma Davis",
@@ -54,7 +54,7 @@ export const mockCourses: Course[] = [
     ],
   },
   {
-    id: "4",
+    _id: "4",
     title: "Psychology Basics",
     description: "Introduction to human behavior and mental processes",
     instructor: "Prof. Michael Lee",
@@ -101,7 +101,7 @@ export interface Chapter {
 
 // Course interface
 export interface Course {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   instructor: string;
@@ -148,3 +148,8 @@ export async function fetchCourses(
     return res.data.courses; // assuming backend returns { courses: [] }
   }
   
+
+  export async function fetchCourseById(courseId: string): Promise<Course> {
+    const res = await axiosInstance.get(`/courses/${courseId}`);
+    return res.data;
+  }
