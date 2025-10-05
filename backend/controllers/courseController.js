@@ -1,4 +1,6 @@
 import Course from "../models/courseModel.js";
+import mongoose from "mongoose";
+
 
 // @desc    Get all courses with category filter + pagination
 // @route   GET /api/courses
@@ -44,11 +46,23 @@ export const getCourses = async (req, res) => {
 // @access  Public
 export const getCourse = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ message: "Course not found" });
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid course ID" });
+    }
+
+    const course = await Course.findById(id);
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
     res.status(200).json(course);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error fetching course:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
