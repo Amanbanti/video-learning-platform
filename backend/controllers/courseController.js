@@ -100,6 +100,33 @@ export const createCourse = async (req, res) => {
   };
 
 
+  export const createChapter = async (req,res)=>{
+
+    const { courseId } = req.params;
+    const { title, description, videoUrl, duration } = req.body;
+  
+    if (!title || !description || !videoUrl || !duration) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+  
+    try {
+      const course = await Course.findById(courseId);
+      if (!course) return res.status(404).json({ message: "Course not found" });
+  
+      // Add the new chapter
+      const newChapter = { id: Date.now().toString(), title, description, videoUrl, duration };
+      course.chapters.push(newChapter);
+  
+      await course.save();
+      res.status(201).json(newChapter);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: err.message });
+    }
+
+  }
+
+
 // @desc    Update a course by ID
 // @route   PUT /api/courses/:id
 // @access  Public (or protected if you have auth)
