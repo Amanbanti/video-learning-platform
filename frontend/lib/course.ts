@@ -12,14 +12,18 @@ export const mockCourses: Course[] = [
     category: "Natural-FreshMan",
     chapters: [
       {
-        id: "1-1",
+        _id: "1-1",
         title: "Introduction to Calculus",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        duration:"200",
+        description:"calculus for uni  student"
       },
       {
-        id: "1-2",
+        _id: "1-2",
         title: "Advanced Derivatives",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        duration:"200",
+        description:"calculus for uni  student"
       },
     ],
   },
@@ -32,9 +36,11 @@ export const mockCourses: Course[] = [
     category: "Natural-Remedial",
     chapters: [
       {
-        id: "2-1",
+        _id: "2-1",
         title: "Newton's Laws",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        duration:"200",
+        description:"calculus for uni  student"
       },
     ],
   },
@@ -47,9 +53,11 @@ export const mockCourses: Course[] = [
     category: "Social-FreshMan",
     chapters: [
       {
-        id: "3-1",
+        _id: "3-1",
         title: "Ancient Civilizations",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        duration:"200",
+        description:"calculus for uni  student"
       },
     ],
   },
@@ -62,9 +70,11 @@ export const mockCourses: Course[] = [
     category: "Social-Remedial",
     chapters: [
       {
-        id: "4-1",
+        _id: "4-1",
         title: "Cognitive Psychology",
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+        duration:"200",
+        description:"calculus for uni  student"
       },
     ],
   },
@@ -94,9 +104,18 @@ export type CategoryEnum = typeof categoryEnum[number];
 
 // Chapter interface
 export interface Chapter {
-  id: string;
+  _id: string;
   title: string;
   videoUrl: string;
+  duration: string;
+  description: string;
+}
+
+export interface ChapterInput {
+  title: string;
+  description: string;
+  videoUrl: string;
+  duration: string;
 }
 
 // Course interface
@@ -152,4 +171,15 @@ export async function fetchCourses(
   export async function fetchCourseById(courseId: string): Promise<Course> {
     const res = await axiosInstance.get(`/courses/${courseId}`);
     return res.data;
+  }
+
+
+  export async function createChapter(courseId: string, chapter: ChapterInput): Promise<Chapter> {
+    try {
+      const res = await axiosInstance.post(`/courses/${courseId}/chapters`, chapter);
+      return res.data; // the created chapter
+    } catch (error: any) {
+      console.error("Error creating chapter:", error);
+      throw error;
+    }
   }

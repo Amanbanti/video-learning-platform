@@ -68,11 +68,12 @@ export type CategoryEnum = typeof categoryEnum[number];
 
 // Chapter interface
 export interface Chapter {
-  id: string;
+  _id: string;
   title: string;
   videoUrl: string;
+  duration: string;
+  description: string;
 }
-
 // Course interface
 export interface Course {
   _id: string;

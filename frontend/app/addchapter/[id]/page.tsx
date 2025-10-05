@@ -8,7 +8,7 @@ import { Badge } from "../../../components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../components/ui/accordion"
 import { BookOpen, Play, Clock, Lock } from "lucide-react"
 import { getCurrentUser, logout } from "../../../lib/auth"
-import { mockCourses, type Course, type Chapter } from "../../../lib/course"
+import {  type Course, type Chapter } from "../../../lib/course"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog"
 import { Input } from "../../../components/ui/input"
 import { Textarea } from "../../../components/ui/textarea"
@@ -17,7 +17,8 @@ import Header from "../../../components/Header"
 import { LoaderCircle } from "lucide-react"
 
 import { toast } from "react-hot-toast"
-import { fetchCourseById} from "../../../lib/course"
+import { fetchCourseById, createChapter} from "../../../lib/course"
+
 
 export default function CoursePage() {
   const [user, setUser] = useState(getCurrentUser())
@@ -27,6 +28,10 @@ export default function CoursePage() {
   const [videoUrl, setVideoUrl] = useState("")
   const [duration, setDuration] = useState("")
   const [loading, setLoading] = useState(false)
+
+  const [chapterLoading, setChapterLoading] = useState(false)
+
+  const [open,setOpen] =useState(false)
 
   const router = useRouter()
   const params = useParams()
@@ -104,42 +109,36 @@ export default function CoursePage() {
 
 
   const handleChapterSelect = (chapterId: string) => {
-    const chapter = course?.chapters.find((c) => c.id === chapterId)
+    const chapter = course?.chapters.find((c) => c._id === chapterId)
     if (!chapter) return
     router.push(`/watch/${courseId}/${chapterId}`)
   }
 
-  // const canAccessChapter = (chapter: Chapter) => {
-  //   if (user.subscriptionStatus === "active") return true
-  //   if (user.subscriptionStatus === "trial" && user.trialVideosWatched < user.maxTrialVideos) return true
-  //   return false
-  // }
 
-  const handleAddChapter = async () => {
-    if (!title.trim()) return
-    setLoading(true)
 
-    try {
-      // Example API call
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/chapters`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description }),
-      })
-
-      if (!res.ok) throw new Error("Failed to add chapter")
-
-      setTitle("")
-      setDescription("")
-      router.refresh()
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
+const handleAddChapter = async () => {
+  if (!title || !description || !videoUrl || !duration) {
+    toast.error("All fields required!");
+    return;
   }
 
+  try {
+    setChapterLoading(true);
+    const newChapter = await createChapter(courseId, { title, description, videoUrl, duration });
+    toast.success("Chapter added successfully!");
+    setCourse((prev) => prev ? { ...prev, chapters: [...prev.chapters, newChapter] } : prev);
+    setTitle("");
+    setDescription("");
+    setVideoUrl("");
+    setDuration("");
 
+  setOpen(false);
+  } catch (error) {
+    toast.error("Failed to add chapter.");
+  } finally {
+    setChapterLoading(false);
+  }
+};
 
   
 
@@ -157,22 +156,19 @@ export default function CoursePage() {
         <div className="container mx-auto px-4 py-8">
         {/* Course Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <Badge>{course.category}</Badge>
-          </div>
 
           <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-sm text-muted-foreground">Category:</span>
+            <Badge>{course.category}</Badge>
+          </div>
+          <div className="flex items-center gap-2 pb-4 text-sm text-muted-foreground">
+              <span>Instructor:</span>
+              <span >{course.instructor}</span>
+
+          </div>
           <p className="text-muted-foreground text-lg mb-6">{course.description}</p>
 
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Play className="h-4 w-4" />
-              <span>{course.chapters.length} chapters</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-            </div>
-          </div>
         </div>
 
         {/* Course Content */}
@@ -189,7 +185,7 @@ export default function CoursePage() {
               <CardContent>
                 <Accordion type="single" collapsible className="w-full">
                   {course.chapters.map((chapter, index) => (
-                    <AccordionItem key={chapter.id} value={chapter.id}>
+                    <AccordionItem key={chapter._id} value={chapter._id}>
                       <AccordionTrigger className="hover:no-underline">
                         <div className="flex items-center justify-between w-full mr-4">
                           <div className="flex items-center gap-3">
@@ -214,7 +210,7 @@ export default function CoursePage() {
                       <AccordionContent>
                         <div className="pt-4 pl-11">
                           <Button
-                            onClick={() => handleChapterSelect(chapter.id)}
+                            onClick={() => handleChapterSelect(chapter._id)}
                            
                             className="w-full sm:w-auto"
                           >
@@ -248,7 +244,7 @@ export default function CoursePage() {
                 <CardDescription>Create a new chapter for this course</CardDescription>
               </CardHeader>
               <CardContent>
-                <Dialog>
+                <Dialog open={open} onOpenChange={setOpen}>
                   <DialogTrigger asChild>
                     <Button className="w-full cursor-pointer">+ Add Chapter</Button>
                   </DialogTrigger>
@@ -265,6 +261,7 @@ export default function CoursePage() {
                         <div className="pb-2 text-sm text-muted-foreground" >Chapter Title</div>
                         <Input
                               placeholder="Chapter title"
+                              required
                               value={title}
                               onChange={(e) => setTitle(e.target.value)}
                             
@@ -277,6 +274,7 @@ export default function CoursePage() {
                             <div className="pb-2 text-sm text-muted-foreground" >Chapter Description</div>
                             <Textarea
                             placeholder="Chapter description"
+                            required
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                           />
@@ -287,6 +285,7 @@ export default function CoursePage() {
                             <div className="pb-2 text-sm text-muted-foreground" >Chapter Video URL</div>
                             <Input
                             placeholder="Chapter Video URL"
+                            required
                             value={videoUrl}
                             onChange={(e) => setVideoUrl(e.target.value)}
                           />
@@ -294,19 +293,20 @@ export default function CoursePage() {
 
 
                        <div className="pb-3">
-                            <div className="pb-2 text-sm text-muted-foreground" >Chapter Duration</div>
+                            <div className="pb-2 text-sm text-muted-foreground" >Chapter Duration in minuets</div>
                             
                             <Input
                               placeholder="Chapter duration in minites"
                               value={duration}
+                              required
                               onChange={(e) => setDuration(e.target.value)}
                             />
                        </div>
                       
                       
 
-                      <Button className="w-full cursor-pointer" onClick={handleAddChapter} disabled={loading}>
-                        {loading ? "Adding..." : "Add Chapter"}
+                      <Button className="w-full cursor-pointer" onClick={handleAddChapter} disabled={chapterLoading}>
+                        {chapterLoading ? "Adding..." : "Add Chapter"}
                       </Button>
                     </form>
                   </DialogContent>
@@ -320,16 +320,22 @@ export default function CoursePage() {
                 <CardTitle className="text-lg">Course Overview</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Chapters</span>
-                  <span className="font-medium">{course.chapters.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Free Chapters</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Premium Chapters</span>
-                </div>
+              <div className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 pb-4">
+                      <Play className="h-4 w-4" />
+                      <span>{course.chapters.length} chapters</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span>
+                        Total Duration:{" "}
+                        {course.chapters.length > 0
+                          ? course.chapters.reduce((acc, chapter) => acc + Number(chapter.duration), 0) + " mins"
+                          : "N/A"}
+                      </span>
+                    </div>
+              
+                  </div>
               </CardContent>
             </Card>
           </div>
