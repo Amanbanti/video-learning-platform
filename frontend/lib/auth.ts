@@ -16,22 +16,44 @@ export interface User {
 
 
 // Auth functions
-export function getCurrentUser(): User | null {
-  if (typeof window !== "undefined") {
-    const userData = localStorage.getItem("currentUser")
-    return userData ? JSON.parse(userData) : null
-  }
-  return null
-}
 
 export function setCurrentUser(user: User | null) {
-  if (typeof window !== "undefined") {
-    if (user) {
-      console.log("Setting current user: on local storage")
-      localStorage.setItem("currentUser", JSON.stringify(user))
-    } else {
-      localStorage.removeItem("currentUser")
+  if (typeof window === "undefined") return;
+
+  if (user) {
+    console.log("Setting current user in local storage");
+
+    const data = {
+      user,
+      timestamp: new Date().getTime(), // current time in ms
+    };
+
+    localStorage.setItem("currentUser", JSON.stringify(data));
+  } else {
+    localStorage.removeItem("currentUser");
+  }
+}
+
+export function getCurrentUser(): User | null {
+  if (typeof window === "undefined") return null;
+
+  const userData = localStorage.getItem("currentUser");
+  if (!userData) return null;
+
+  try {
+    const parsed = JSON.parse(userData) as { user: User; timestamp: number };
+    const now = new Date().getTime();
+
+    // 1 day = 24 * 60 * 60 * 1000 ms
+    if (now - parsed.timestamp > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem("currentUser"); // expired
+      return null;
     }
+
+    return parsed.user;
+  } catch {
+    localStorage.removeItem("currentUser");
+    return null;
   }
 }
 
