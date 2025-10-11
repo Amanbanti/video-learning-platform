@@ -152,6 +152,26 @@ export async function createCourse(
 }
 
 
+export async function updateCourse(
+  courseId: string,
+  title: string,
+  description: string,
+  instructor: string,
+  category: CategoryEnum,
+  coverImage: File | null
+): Promise<Course> {
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  formData.append("instructor", instructor);
+  formData.append("category", category);
+  if (coverImage) formData.append("coverImage", coverImage);
+  const res = await axiosInstance.put(`/courses/${courseId}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
+
 export async function fetchCourses(
     page: number = 1,
     limit: number = 10,
@@ -171,6 +191,12 @@ export async function fetchCourses(
   export async function fetchCourseById(courseId: string): Promise<Course> {
     const res = await axiosInstance.get(`/courses/${courseId}`);
     return res.data;
+  }
+
+
+  export async function deleteCourse(courseId: string): Promise<void> {
+    await axiosInstance.delete(`/courses/${courseId}`);
+    return;
   }
 
 

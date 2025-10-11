@@ -6,20 +6,23 @@ import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
-import { Users, Video, CreditCard, Plus, Eye, Edit, Trash2, Check, X } from "lucide-react"
-import { mockCourses, type PaymentRequest } from "../../lib/course"
+import {Eye, Edit, Trash2, Check, X } from "lucide-react"
+import { mockCourses, type PaymentRequest,deleteCourse } from "../../lib/course"
 import { getCurrentUser } from "../../lib/auth"
 import Link from "next/link"
 
 import Header from "../../components/Header"
 import AddCourseDialog from "../../components/AddCourseDialog"
+import EditCourse from "../../components/EditCourse"
 
 import { toast } from "react-hot-toast"
 import {fetchCourses} from "../../lib/course"
 import DashboardStats from "../../components/DashboardStats"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import  CourseCardSkeleton  from "../../components/CourseCardSkeleton"
-import { Label } from "recharts"
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../../components/ui/dialog"
+import { DialogHeader } from "../../components/ui/dialog"
+
 
 
 // Mock payment requests data
@@ -98,6 +101,10 @@ export default function AdminPage() {
 
   const [coursePage, setCoursePage] = useState(1); // pagination
   const [category, setCategory] = useState(""); 
+  const [onCourseUpdated, setOnCourseUpdated] = useState(false);
+  const [onCourseCreated, setOnCourseCreated] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
 
 
   const router = useRouter()
@@ -140,7 +147,7 @@ export default function AdminPage() {
     };
   
     load();
-  }, [activeTab, coursePage, category]);
+  }, [activeTab, coursePage,onCourseUpdated,onCourseCreated, category]);
 
   useEffect(() => {
     setCoursePage(1); // reset page when category changes
@@ -156,6 +163,20 @@ export default function AdminPage() {
         req.id === requestId ? { ...req, status: action === "approve" ? "approved" : "rejected" } : req,
       ),
     )
+  }
+
+  const handleDeleteCourse = (courseId: string) => {
+      try {
+        setIsDeleting(true);
+        deleteCourse(courseId); // call the API to delete
+      toast.success("Course deleted successfully");
+      setCourses((prev) => prev.filter((course) => course._id !== courseId));
+    } catch (error) {
+       toast.error("Error deleting course. Please try again.");
+    }finally {
+        setIsDeleting(false);
+    }
+    
   }
 
   if (!user || !user.isAdmin) return null
@@ -273,7 +294,12 @@ export default function AdminPage() {
                 </div>
               
 
-              <AddCourseDialog/>
+              <AddCourseDialog onCourseUpdated={() => {
+                // Handle course creation logic here
+                setCoursePage(1); // reset to first page
+                setActiveTab("courses"); // ensure tab is active
+                setOnCourseCreated((prev) => !prev); // Trigger refresh after adding a course
+              }} />
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -316,14 +342,48 @@ export default function AdminPage() {
                                   View
                                 </Button>
 
-                                <Button size="sm" variant="outline" className="flex-1 bg-transparent cursor-pointer">
-                                  <Edit className="h-3 w-3 mr-1" />
-                                  Edit
-                                </Button>
-                                <Button size="sm" variant="destructive" className="cursor-pointer">
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
+                                <EditCourse course={course} onCourseUpdated={() => {
+                                  // Refresh course list after edit
+                                  setCoursePage(1); // reset to first page
+                                  setActiveTab("courses"); // ensure tab is 
+                                  setOnCourseUpdated((prev) => !prev); // toggle to trigger useEffect
+                                }} />
+                                   <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="destructive" className="cursor-pointer">
+                                      <Trash2 className="h-3 w-3" />
+                                      Delete
+                                    </Button>
+                                  </DialogTrigger>
+
+                                  <DialogContent className="sm:max-w-lg bg-white text-black shadow-xl rounded-lg z-[9999]">
+                                    <DialogHeader>
+                                      <DialogTitle>Delete Course</DialogTitle>
+                                      <DialogDescription>
+                                        Are you sure you want to delete this course? This action cannot be undone.
+                                      </DialogDescription>
+                                    </DialogHeader>
+
+                                    <div className="flex justify-end space-x-2 mt-4">
+                                      <DialogTrigger asChild>
+                                        <Button variant="outline" size="sm" className="cursor-pointer">
+                                          Cancel
+                                        </Button>
+                                      </DialogTrigger>
+
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => handleDeleteCourse(course._id)}
+                                        disabled={isDeleting}
+                                        className="cursor-pointer"
+                                      >
+                                        {isDeleting ? "Deleting..." : "Delete"}
+                                      </Button>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                                                              </div>
                             </CardContent>
                           </Card>
                         );
