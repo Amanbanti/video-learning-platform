@@ -132,13 +132,21 @@ export const createCourse = async (req, res) => {
 // @access  Public (or protected if you have auth)
 export const updateCourse = async (req, res) => {
   try {
-    const { title, description, instructor, category, chapters } = req.body;
+    const { title, description, instructor, category} = req.body;
+
+    if (!title || !description || !instructor || !category) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if(req.params.id && !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid course ID" });
+    }
+
     const updatedData = {
       title,
       description,
       instructor,
       category,
-      chapters: chapters ? JSON.parse(chapters) : [], // parse if sent as string
     };
 
     // If a new cover image is uploaded
@@ -153,6 +161,8 @@ export const updateCourse = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
 
 // @desc    Delete a course by ID
 // @route   DELETE /api/courses/:id
