@@ -21,18 +21,14 @@ import { Label } from "./ui/label";
 import {createCourse} from "../lib/course";
 import toast from "react-hot-toast";
 
-export default function AddCourseDialog() {
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [coverImage, setCoverImage] = useState<File | null>(null);
-    const [instructor, setInstructor] = useState("");
-    const [category, setCategory] = useState("");
-
-    const [isLoading, setIsLoading] = useState(false);
-
-    const [open, setOpen] = useState(false); // dialog state
-    
-
+export default function AddCourseDialog({ onCourseUpdated }: { onCourseUpdated: () => void }): JSX.Element {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [instructor, setInstructor] = useState("");
+  const [category, setCategory] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const categoryEnum = [
     "Natural-FreshMan",
@@ -46,20 +42,19 @@ export default function AddCourseDialog() {
 
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-  
-
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
   
     if (!coverImage) {
       toast.error("Cover image is required.");
+      setIsLoading(false);
       return;
     }
   
     if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(coverImage.type)) {
       toast.error("Invalid image type. Allowed types: jpg, jpeg, png, webp.");
+      setIsLoading(false);
       return;
     }
   
@@ -73,25 +68,27 @@ export default function AddCourseDialog() {
       );
       console.log("Course created:", result);
       toast.success("Course created successfully!");
-      setIsLoading(false);
+      
+      // Reset form
       setTitle("");
       setDescription("");
       setCoverImage(null);
       setInstructor("");
       setCategory("");
-      // Reset form or close dialog here
+      
+      // Close dialog
       setOpen(false);
-      setIsLoading(false);
-
-
+      
+      // IMPORTANT: Call the callback to refresh the course list
+      onCourseUpdated();
+      
     } catch (err:any) {
       toast.error(err?.response?.data?.message || "Error creating course!");
       console.error("Error creating course:", err);
-    }finally {
-        setIsLoading(false);
+    } finally {
+      setIsLoading(false);
     }
   };
-
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -102,7 +99,7 @@ export default function AddCourseDialog() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-lg">
         <DialogHeader>
           <DialogTitle>Add New Course</DialogTitle>
           <DialogDescription>
@@ -123,7 +120,7 @@ export default function AddCourseDialog() {
           </div>
 
           <div>
-            <Label  className="pb-4" htmlFor="description">Description</Label>
+            <Label className="pb-4" htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={description}
@@ -133,7 +130,7 @@ export default function AddCourseDialog() {
           </div>
 
           <div>
-            <Label  className="pb-4" htmlFor="coverImage">Cover Image</Label>
+            <Label className="pb-4" htmlFor="coverImage">Cover Image</Label>
             <Input
               id="coverImage"
               type="file"
@@ -143,7 +140,7 @@ export default function AddCourseDialog() {
           </div>
 
           <div>
-            <Label  className="pb-4" htmlFor="instructor">Instructor</Label>
+            <Label className="pb-4" htmlFor="instructor">Instructor</Label>
             <Input
               id="instructor"
               value={instructor}
@@ -154,14 +151,14 @@ export default function AddCourseDialog() {
           </div>
 
           <div>
-            <Label  className="pb-4" htmlFor="category">Category</Label>
+            <Label className="pb-4" htmlFor="category">Category</Label>
             <Select value={category} onValueChange={setCategory} required>
               <SelectTrigger id="category" className="w-full cursor-pointer">
                 <SelectValue placeholder="Select Category" />
               </SelectTrigger>
               <SelectContent>
                 {categoryEnum.map((cat) => (
-                  <SelectItem key={cat} value={cat}  className="cursor-pointer">
+                  <SelectItem key={cat} value={cat} className="cursor-pointer">
                     {cat}
                   </SelectItem>
                 ))}
@@ -173,7 +170,9 @@ export default function AddCourseDialog() {
             <DialogClose className="cursor-pointer" asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit" className="cursor-pointer" disabled={isLoading}>{isLoading ? "Creating" : "Create"}</Button>
+            <Button type="submit" className="cursor-pointer" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
