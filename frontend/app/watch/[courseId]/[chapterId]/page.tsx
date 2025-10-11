@@ -28,8 +28,8 @@ export default function WatchPage() {
       return
     }
 
-    const foundCourse = mockCourses.find((c) => c.id === courseId)
-    const foundChapter = foundCourse?.chapters.find((c) => c.id === chapterId)
+    const foundCourse = mockCourses.find((c) => c._id === courseId)
+    const foundChapter = foundCourse?.chapters.find((c) => c._id === chapterId)
 
     setCourse(foundCourse || null)
     setChapter(foundChapter || null)
@@ -88,19 +88,19 @@ export default function WatchPage() {
 
   const goToNextChapter = () => {
     if (!course) return
-    const currentIndex = course.chapters.findIndex((c) => c.id === chapterId)
+    const currentIndex = course.chapters.findIndex((c) => c._id === chapterId)
     const nextChapter = course.chapters[currentIndex + 1]
     if (nextChapter) {
-      router.push(`/watch/${courseId}/${nextChapter.id}`)
+      router.push(`/watch/${courseId}/${nextChapter._id}`)
     }
   }
 
   const goToPreviousChapter = () => {
     if (!course) return
-    const currentIndex = course.chapters.findIndex((c) => c.id === chapterId)
+    const currentIndex = course.chapters.findIndex((c) => c._id === chapterId)
     const prevChapter = course.chapters[currentIndex - 1]
     if (prevChapter) {
-      router.push(`/watch/${courseId}/${prevChapter.id}`)
+      router.push(`/watch/${courseId}/${prevChapter._id}`)
     }
   }
 
@@ -258,16 +258,16 @@ export default function WatchPage() {
               <CardContent className="space-y-2">
                 {course.chapters.map((ch, index) => (
                   <div
-                    key={ch.id}
+                    key={ch._id}
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      ch.id === chapterId ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                      ch._id === chapterId ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                     }`}
-                    onClick={() => router.push(`/watch/${courseId}/${ch.id}`)}
+                    onClick={() => router.push(`/watch/${courseId}/${ch._id}`)}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                          ch.id === chapterId ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground"
+                          ch._id === chapterId ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {index + 1}
@@ -276,7 +276,7 @@ export default function WatchPage() {
                         <div className="font-medium text-sm truncate">{ch.title}</div>
                         <div
                           className={`text-xs ${
-                            ch.id === chapterId ? "text-primary-foreground/80" : "text-muted-foreground"
+                            ch._id === chapterId ? "text-primary-foreground/80" : "text-muted-foreground"
                           }`}
                         >
                           33

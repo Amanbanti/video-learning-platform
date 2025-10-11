@@ -14,10 +14,13 @@ import { Input } from "../../../components/ui/input"
 import { Textarea } from "../../../components/ui/textarea"
 import Header from "../../../components/Header"
 
+import ReactPlayer from "react-player";
+
 import { LoaderCircle } from "lucide-react"
 
 import { toast } from "react-hot-toast"
 import { fetchCourseById, createChapter} from "../../../lib/course"
+import {YouTubePlayer} from "../../../components/YouTubeVideoPlayer"
 
 
 export default function CoursePage() {
@@ -30,6 +33,9 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(false)
 
   const [chapterLoading, setChapterLoading] = useState(false)
+
+  const [activeChapter, setActiveChapter] = useState<string | null>(null)
+
 
   const [open,setOpen] =useState(false)
 
@@ -109,10 +115,36 @@ export default function CoursePage() {
 
 
   const handleChapterSelect = (chapterId: string) => {
-    const chapter = course?.chapters.find((c) => c._id === chapterId)
-    if (!chapter) return
-    router.push(`/watch/${courseId}/${chapterId}`)
+    setActiveChapter((prev) => (prev === chapterId ? null : chapterId))
   }
+  
+
+  function getYouTubeVideoId(url: string) {
+    const match = url.match(/[?&]v=([^&]+)/);
+    return match ? match[1] : null;
+  }
+
+  function toEmbedUrl(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname.includes("youtube.com") && urlObj.searchParams.get("v")) {
+        return `https://www.youtube.com/embed/${urlObj.searchParams.get("v")}`;
+      }
+      if (urlObj.hostname === "youtu.be") {
+        return `https://www.youtube.com/embed/${urlObj.pathname.slice(1)}`;
+      }
+      return url; // fallback
+    } catch {
+      return url;
+    }
+  }
+
+
+
+  
+  
+  
+  
 
 
 
@@ -179,58 +211,61 @@ const handleAddChapter = async () => {
               <CardHeader>
                 <CardTitle>Course Chapters</CardTitle>
                 <CardDescription>
-                  Click on any chapter to start watching. Premium chapters require a subscription.
+                  Click on any chapter to start watching.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Accordion type="single" collapsible className="w-full">
-                  {course.chapters.map((chapter, index) => (
-                    <AccordionItem key={chapter._id} value={chapter._id}>
-                      <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center justify-between w-full mr-4">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                              {index + 1}
-                            </div>
-                            <div className="text-left">
-                              <div className="font-medium">{chapter.title}</div>
-                              <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                <Clock className="h-3 w-3" />
-                                {true && (
-                                  <>
-                                    <Lock className="h-3 w-3" />
-                                    <span>Premium</span>
-                                  </>
-                                )}
+              <Accordion type="single" collapsible className="w-full">
+                    {course.chapters.length > 0 ? (
+                      course.chapters.map((chapter: any, index: number) => (
+                        <AccordionItem key={chapter._id} value={chapter._id}>
+                          <AccordionTrigger className="hover:no-underline">
+                            <div className="flex items-center justify-between w-full mr-4">
+                              <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                                  {index + 1}
+                                </div>
+                                <div className="text-left">
+                                  <div className="font-medium">{chapter.title}</div>
+                                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                    <Clock className="h-3 w-3" />
+                                    <span className="text-sm text-muted-foreground pt-2">
+                                      {chapter.duration} mins
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="pt-4 pl-11">
-                          <Button
-                            onClick={() => handleChapterSelect(chapter._id)}
-                           
-                            className="w-full sm:w-auto"
-                          >
-                            {true ? (
-                              <>
-                                <Play className="h-4 w-4 mr-2" />
-                                Watch Chapter
-                              </>
-                            ) : (
-                              <>
-                                <Lock className="h-4 w-4 mr-2" />
-                                Upgrade to Watch
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="pt-2 pl-11">
+                              <div className="text-sm text-muted-foreground pb-3">
+                                Description: {chapter.description}
+                              </div>
+
+                              {activeChapter === chapter._id ? (
+                                      <div className="aspect-video w-full rounded-lg overflow-hidden">
+                                        <YouTubePlayer videoUrl={chapter.videoUrl} />
+                                      </div>
+                                    ) : (
+                                      <Button
+                                        onClick={() => handleChapterSelect(chapter._id)}
+                                        className="w-full sm:w-auto"
+                                      >
+                                        <Play className="h-4 w-4 mr-2" />
+                                        Watch Chapter
+                                      </Button>
+                                    )}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))
+                    ) : (
+                      <div className="text-center text-muted-foreground col-span-3">
+                        No chapters found.
+                      </div>
+                    )}
+                  </Accordion>
               </CardContent>
             </Card>
           </div>
