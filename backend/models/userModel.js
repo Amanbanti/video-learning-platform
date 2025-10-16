@@ -49,8 +49,8 @@ const userSchema = new mongoose.Schema(
     // ✅ Subscription
     subscriptionStatus: {
       type: String,
-      enum: ["none", "trial", "pending", "active"],
-      default: "trial",
+      enum: ["Trial", "Pending", "Active"],
+      default: "Trial",
     },
     trialVideosWatched: {
       type: Number,

@@ -169,3 +169,76 @@ export const uploadReceipt = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// @desc    Get all users with pagination + optional search
+// @route   GET /api/users
+// @access  Private/Admin
+export const getAllUsers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.userPage) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const searchQuery = req.query.searchQuery?.trim() || "";
+
+    const skip = (page - 1) * limit;
+
+    // 🔍 Build search filter
+    const filter = {
+      isAdmin: { $ne: true }, // exclude admins
+    };
+
+    if (searchQuery) {
+      filter.$or = [
+        { name: { $regex: searchQuery, $options: "i" } },
+        { email: { $regex: searchQuery, $options: "i" } },
+      ];
+    }
+
+    // Fetch users (excluding sensitive data)
+    const users = await User.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .select("-password -verificationCode -verificationCodeExpires");
+
+    const total = await User.countDocuments(filter);
+
+    res.json({
+      users,
+      total,
+      totalPages: Math.ceil(total / limit),
+      page,
+      limit,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+
+
+export const updateUserSubscription = async (req, res) => {
+  const { userId } = req.params
+  const { status } = req.body
+
+  if (!["Trial", "Active"].includes(status)) {
+    return res.status(400).json({ message: "Invalid subscription status" })
+  }
+
+  try {
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+
+    user.subscriptionStatus = status
+    await user.save()
+
+    // Return updated user (excluding sensitive fields)
+    const { password, verificationCode, verificationCodeExpires, ...userData } = user.toObject()
+    res.json(userData)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
