@@ -257,26 +257,28 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         {step === 4 && (
           <div className="space-y-2">
             <Label htmlFor="verificationCode">Verification Code</Label>
-            
-            <InputOTP 
-              id="verificationCode"
-              maxLength={6}
-              value={verificationCode}
-              onChange={(value) => setVerificationCode(value)}
-              required
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-              </InputOTPGroup>
-              <InputOTPSeparator />
-              <InputOTPGroup>
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+            <InputOTP
+                  id="verificationCode"
+                  maxLength={6}
+                  value={verificationCode}
+                  onChange={(value) => setVerificationCode(value)}
+                  required
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  type="tel"
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                  </InputOTPGroup>
+                  <InputOTPSeparator />
+                  <InputOTPGroup>
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
           </div>
         )}
 

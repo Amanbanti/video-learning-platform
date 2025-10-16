@@ -119,33 +119,6 @@ export default function CoursePage() {
   }
   
 
-  function getYouTubeVideoId(url: string) {
-    const match = url.match(/[?&]v=([^&]+)/);
-    return match ? match[1] : null;
-  }
-
-  function toEmbedUrl(url: string): string {
-    try {
-      const urlObj = new URL(url);
-      if (urlObj.hostname.includes("youtube.com") && urlObj.searchParams.get("v")) {
-        return `https://www.youtube.com/embed/${urlObj.searchParams.get("v")}`;
-      }
-      if (urlObj.hostname === "youtu.be") {
-        return `https://www.youtube.com/embed/${urlObj.pathname.slice(1)}`;
-      }
-      return url; // fallback
-    } catch {
-      return url;
-    }
-  }
-
-
-
-  
-  
-  
-  
-
 
 
 const handleAddChapter = async () => {

@@ -6,10 +6,10 @@ import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
-import {Eye, Edit, Trash2, Check, X } from "lucide-react"
+import {Eye, Edit, Trash2, Check, X, Search, Users } from "lucide-react"
 import { mockCourses, type PaymentRequest,deleteCourse } from "../../lib/course"
 import { getCurrentUser } from "../../lib/auth"
-import Link from "next/link"
+import { LoaderCircle } from "lucide-react"
 
 import Header from "../../components/Header"
 import AddCourseDialog from "../../components/AddCourseDialog"
@@ -17,11 +17,24 @@ import EditCourse from "../../components/EditCourse"
 
 import { toast } from "react-hot-toast"
 import {fetchCourses} from "../../lib/course"
+import {getAllUsers} from "../../lib/auth"
 import DashboardStats from "../../components/DashboardStats"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import  CourseCardSkeleton  from "../../components/CourseCardSkeleton"
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../../components/ui/dialog"
 import { DialogHeader } from "../../components/ui/dialog"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationNext,
+  PaginationPrevious,
+} from "../../components/ui/pagination"
+import { Input } from "../../components/ui/input"
+import { Label } from "../../components/ui/label"
+
+import { changeSubscriptionStatus } from "../../lib/auth"
+
+
 
 
 
@@ -88,6 +101,19 @@ export interface Course {
   chapters: Chapter[];
 }
 
+
+export interface User {
+  _id: string
+  email: string
+  name: string
+  isAdmin: boolean
+  subscriptionStatus: "Trial" | "Pending" | "Active"
+  password: string
+  trialVideosWatched: number
+  maxTrialVideos: number
+  paymentReceipt?: string
+}
+
 export default function AdminPage() {
 
 
@@ -95,15 +121,35 @@ export default function AdminPage() {
   const [paymentRequests, setPaymentRequests] = useState(mockPaymentRequests)
 
   const [activeTab, setActiveTab] = useState("payments");
+  
+
+  //course states
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseLoading, setCourseLoading] = useState(false);
-
-
   const [coursePage, setCoursePage] = useState(1); // pagination
   const [category, setCategory] = useState(""); 
   const [onCourseUpdated, setOnCourseUpdated] = useState(false);
   const [onCourseCreated, setOnCourseCreated] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [totalPages, setTotalPages] = useState(1); // total pages for pagination
+  const [currentPage, setCurrentPage] = useState(1); // current page from API
+
+
+
+  //user states
+  const [users, setUsersData] = useState<User[]>([]);
+  const [userLoading, setUserLoading] = useState(false);
+  const [userPage, setUserPage] = useState(1); // pagination
+  const [userTotalPages, setUserTotalPages] = useState(1); // total pages for pagination
+  const [userCurrentPage, setUserCurrentPage] = useState(1); // current page from API
+  const [searchQuery, setSearchQuery] = useState("");
+  const [open, setOpen] = useState(false)
+  const [selectedStatus, setSelectedStatus] = useState("")
+  const [editingUserId, setEditingUserId] = useState<string | null>(null)
+  const [statusLoading, setStatusLoading] = useState(false)
+
+  
+
 
 
 
@@ -119,35 +165,58 @@ export default function AdminPage() {
       router.push("/dashboard")
       return
     }
-  }, [user, router])
+  }, [user, router,activeTab])
 
 
 
   useEffect(() => {
-    if (activeTab !== "courses") return;
+    if (activeTab == "courses"){
+      const load = async () => {
+        try {
+          setCourseLoading(true);
+    
+          // Convert "all" to empty string for API
+          const categoryParam = category === "all" ? "" : category;
+    
+          // Simulate delay
+          await new Promise((resolve) => setTimeout(resolve, 500));
+    
+          const fetchedCourses = await fetchCourses(coursePage, 5, categoryParam);
+          setCourses(fetchedCourses.courses);
+          setTotalPages(fetchedCourses.totalPages); 
+          setCurrentPage(fetchedCourses.page);
+        } catch (err) {
+          toast.error("Error fetching courses. Please try again.");
+          console.error("Error fetching courses:", err);
+        } finally {
+          setCourseLoading(false);
+        }
+      };
+    
+      load();
+
+    }else if (activeTab == "users"){
+      setUserLoading(true);
+      const loadUsers = async () => {
+        try {
+          const userResponse = await getAllUsers(searchQuery,10,userPage);
+          setUsersData(userResponse?.users || []);
+          setUserTotalPages(userResponse?.totalPages || 1);
+          setUserCurrentPage(userResponse?.page || 1);
+        } catch (err) {
+          toast.error("Error fetching users. Please try again.");
+          console.error("Error fetching users:", err);
+        }finally {
+          setUserLoading(false);
+        }
+      };
+    
+      loadUsers();
+    }
   
-    const load = async () => {
-      try {
-        setCourseLoading(true);
-  
-        // Convert "all" to empty string for API
-        const categoryParam = category === "all" ? "" : category;
-  
-        // Simulate delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-  
-        const fetchedCourses = await fetchCourses(coursePage, 10, categoryParam);
-        setCourses(fetchedCourses);
-      } catch (err) {
-        toast.error("Error fetching courses. Please try again.");
-        console.error("Error fetching courses:", err);
-      } finally {
-        setCourseLoading(false);
-      }
-    };
-  
-    load();
-  }, [activeTab, coursePage,onCourseUpdated,onCourseCreated, category]);
+    
+  }, [activeTab, coursePage,onCourseUpdated,onCourseCreated, category,userPage,searchQuery]);
+
 
   useEffect(() => {
     setCoursePage(1); // reset page when category changes
@@ -164,6 +233,53 @@ export default function AdminPage() {
       ),
     )
   }
+
+
+  const handleSave = async (userId: string | undefined) => {
+    try{
+      setStatusLoading(true)
+      if(!userId) {
+        toast.error("User ID is missing. Please try again.")
+        return
+      }
+      if(!selectedStatus) {
+        toast.error("Please select a valid status.")
+        return
+      }
+      await changeSubscriptionStatus(userId, selectedStatus)
+      // Update local state to reflect change immediately
+      setUsersData(prev =>
+        prev.map(u => u._id === userId ? { ...u, subscriptionStatus: selectedStatus as "Trial" | "Active" } : u)
+      )
+
+      toast.success("Subscription status updated successfully")
+    }catch(error){
+      toast.error(String(error) || "Error updating subscription status. Please try again.")
+      return
+    }finally{
+      setOpen(false)
+      setStatusLoading(false)
+    }
+   
+    
+  }
+
+
+
+  const handleOpenDialog = (userStatus: string, userID: string) => {
+    if(userStatus === "Pending") {
+      toast.error("Approve the payment request on Payment Request tap!")
+      setOpen(false)
+      return
+
+    }
+    setSelectedStatus(userStatus || "")
+    setEditingUserId(userID || null)
+    setOpen(true)
+  }
+
+  
+
 
   const handleDeleteCourse = (courseId: string) => {
       try {
@@ -396,54 +512,177 @@ export default function AdminPage() {
 
           </TabsContent>
 
+
           {/* User Management Tab */}
           <TabsContent value="users" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>Manage user accounts and subscriptions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Mock user data */}
-                  {[
-                    { id: "1", name: "John Doe", email: "john@example.com", status: "active", joinDate: "2024-01-10" },
-                    { id: "2", name: "Jane Smith", email: "jane@example.com", status: "trial", joinDate: "2024-01-12" },
-                    {
-                      id: "3",
-                      name: "Bob Johnson",
-                      email: "bob@example.com",
-                      status: "pending",
-                      joinDate: "2024-01-14",
-                    },
-                  ].map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                        <p className="text-xs text-muted-foreground">Joined: {user.joinDate}</p>
-                      </div>
-
-                      <div className="flex items-center space-x-4">
-                        <Badge
-                          variant={
-                            user.status === "active" ? "default" : user.status === "trial" ? "secondary" : "outline"
-                          }
-                        >
-                          {user.status}
-                        </Badge>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-3 w-3 mr-1" />
-                          Edit
-                        </Button>
-                      </div>
+          <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>User Management</CardTitle>
+                      <CardDescription>Manage user accounts and subscriptions</CardDescription>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+
+                    {/* 🔍 Search Input */}
+                    <div className="relative w-64">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Search users..."
+                        className="pl-9 pr-4 py-2"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  {userLoading ? (
+                    <div className="flex justify-center items-center py-10">
+                      <LoaderCircle className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {Array.isArray(users) && users.length > 0 ? (
+                        users.map((user) => (
+                          <div key={user._id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div>
+                              <p className="font-medium">{user.name}</p>
+                              <p className="text-muted-foreground">User ID: {user._id}</p>
+                              <p className="text-sm text-muted-foreground">{user.email}</p>
+                            </div>
+
+                            <div className="flex items-center space-x-4">
+                              <Badge
+                                variant={
+                                  user.subscriptionStatus === "Active"
+                                    ? "default"
+                                    : user.subscriptionStatus === "Trial"
+                                    ? "secondary"
+                                    : "outline"
+                                }
+                              >
+                                {user.subscriptionStatus}
+                              </Badge>
+
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="cursor-pointer"
+                                onClick={() => handleOpenDialog(user.subscriptionStatus, user._id)}
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Edit
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center">No users found.</p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Single Dialog for Editing Subscription */}
+              {editingUserId && (
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogContent className="sm:max-w-md bg-white text-black shadow-xl rounded-lg">
+                    <DialogHeader>
+                      <DialogTitle>Edit Subscription Status</DialogTitle>
+                      <DialogDescription>
+                        Change the user's current subscription plan.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 mt-2">
+                      <Label htmlFor="status">Subscription Status</Label>
+                      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                        <SelectTrigger id="status" className="w-full cursor-pointer">
+                          <SelectValue placeholder="Select a status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Trial" className="cursor-pointer">Trial</SelectItem>
+                          <SelectItem value="Active" className="cursor-pointer">Active</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex justify-end space-x-2 mt-4">
+                      <Button variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        disabled={statusLoading}
+                        onClick={() => handleSave(editingUserId)}
+                      >
+                        {statusLoading ? "Saving..." : "Save"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+
           </TabsContent>
         </Tabs>
+
+
+
+
+
+        {/* Pagination for Courses */}
+        {activeTab === "courses" && courses.length > 0 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination>
+              <PaginationPrevious
+                className={coursePage === 1 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+                onClick={coursePage === 1 ? undefined : () => setCoursePage((prev) => Math.max(prev - 1, 1))}
+              >
+                Previous
+              </PaginationPrevious>
+              <PaginationContent>
+                  {currentPage} of {totalPages}
+              </PaginationContent>
+
+              <PaginationNext
+                onClick={totalPages === currentPage ? undefined : () => setCoursePage((prev) => prev + 1)}
+                className={totalPages === currentPage ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              >
+                Next
+              </PaginationNext>
+            </Pagination>
+          </div>
+        )}
+
+
+         {/* Pagination for users */}
+         {activeTab === "users" && Array.isArray(users) && users.length > 0 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination>
+              <PaginationPrevious
+                className={userPage === 1 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+                onClick={userPage === 1 ? undefined : () => setUserPage((prev) => Math.max(prev - 1, 1))}
+              >
+                Previous
+              </PaginationPrevious>
+              <PaginationContent>
+                  {userCurrentPage} of {userTotalPages}
+              </PaginationContent>
+
+              <PaginationNext
+                onClick={userTotalPages === userCurrentPage ? undefined : () => setUserPage((prev) => prev + 1)}
+                className={userTotalPages === userCurrentPage ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              >
+                Next
+              </PaginationNext>
+            </Pagination>
+          </div>
+        )}
+
+
+
       </div>
     </div>
   )
