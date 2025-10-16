@@ -178,3 +178,29 @@ export const deleteCourse = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const countCoursesByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    if (!category) {
+      return res.status(400).json({ message: "Category parameter is required" });
+    }
+
+    // Count for the specific category
+    const categoryCount = await Course.countDocuments({ category });
+
+    // Count for the "Common" category
+    const commonCount = await Course.countDocuments({ category: "Common" });
+
+    // Send response
+    res.status(200).json({
+      category,
+      count: categoryCount,
+      common: commonCount,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
