@@ -129,21 +129,6 @@ export default function HomePage() {
           </Button>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t py-8 px-4 bg-muted/30">
-        <div className="container mx-auto text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="h-6 w-6 bg-primary rounded flex items-center justify-center">
-              <BookOpen className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-semibold">EduLearn</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            © 2025 EduLearn. All rights reserved. Empowering education through technology.
-          </p>
-        </div>
-      </footer>
     </div>
   )
 }
