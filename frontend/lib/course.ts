@@ -127,7 +127,18 @@ export interface Course {
   coverImageUrl: string;
   category: CategoryEnum;
   chapters: Chapter[];
+  
 }
+
+
+export interface CourseResponse {
+  courses: Course[];
+  total: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+}
+
 
 // Function to create a new course
 export async function createCourse(
@@ -176,7 +187,7 @@ export async function fetchCourses(
     page: number = 1,
     limit: number = 10,
     category?: string
-  ): Promise<Course[]> {
+  ): Promise<CourseResponse>  {
     const res = await axiosInstance.get("/courses", {
       params: {
         page,
@@ -184,7 +195,7 @@ export async function fetchCourses(
         category: category || undefined,
       },
     });
-    return res.data.courses; // assuming backend returns { courses: [] }
+    return res.data; // assuming backend returns { courses: [] }
   }
   
 

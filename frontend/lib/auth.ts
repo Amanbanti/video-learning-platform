@@ -1,15 +1,24 @@
 import {axiosInstance} from "./axios"
 
 export interface User {
-  id: string
+  _id: string
   email: string
   name: string
   isAdmin: boolean
-  subscriptionStatus: "trial" | "pending" | "active" | "none"
+  subscriptionStatus: "Trial" | "Pending" | "Active"
   password: string
   trialVideosWatched: number
   maxTrialVideos: number
   paymentReceipt?: string
+}
+
+
+export interface UserResponse {
+  users: User[];
+  total: number;
+  totalPages: number;
+  page: number;
+  limit: number;
 }
 
 
@@ -113,4 +122,18 @@ export async function logout() {
   const res = await axiosInstance.post("/users/logout")
   return res.data
 
+}
+
+
+export async function getAllUsers(searchQuery: string, limit: number, userPage: number): Promise<UserResponse> {
+  const res = await axiosInstance.get("/users", {
+    params: { searchQuery, limit, userPage },
+    withCredentials: true,
+  })
+  return res.data
+}
+
+export async function changeSubscriptionStatus(userId: string, status: string): Promise<User> {
+  const res = await axiosInstance.put(`/users/${userId}/subscription`, { status }, { withCredentials: true })
+  return res.data
 }
