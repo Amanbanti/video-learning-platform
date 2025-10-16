@@ -10,6 +10,8 @@ export interface User {
   trialVideosWatched: number
   maxTrialVideos: number
   paymentReceipt?: string
+  naturalOrSocial: "Natural" | "Social";
+  freshOrRemedial: "Fresh Man" | "Remedial";
 }
 
 

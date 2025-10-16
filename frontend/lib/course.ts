@@ -220,3 +220,8 @@ export async function fetchCourses(
       throw error;
     }
   }
+
+export async function countCoursesByCategory(category: CategoryEnum): Promise<Record<string, number>> {
+  const res = await axiosInstance.get(`/courses/count-by-category/${category}`,);
+  return res.data; 
+  }

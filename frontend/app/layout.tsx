@@ -7,6 +7,7 @@ import { ThemeProvider } from "../components/theme-provider"
 import { Suspense } from "react"
 import "./globals.css"
 import { Toaster } from "react-hot-toast"
+import  Footer  from "../components/Footer"
 
 export const metadata: Metadata = {
   title: "EduLearn - Video Learning Platform",
@@ -24,6 +25,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <ThemeProvider attribute="class"   defaultTheme="light" enableSystem={false}  disableTransitionOnChange>
             {children}
+            <Footer />
           </ThemeProvider>
         </Suspense>
         <Analytics />
