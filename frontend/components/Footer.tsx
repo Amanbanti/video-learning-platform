@@ -11,7 +11,7 @@ export default function Footer() {
     <footer className="mt-16 bg-muted/30 dark:bg-muted/10">
       <div className="container mx-auto px-4 py-10">
         {/* Top Section */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 gap-8">
           {/* About */}
           <div>
             <h2 className="text-lg font-semibold mb-3">EduLearn</h2>
@@ -21,32 +21,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h2 className="text-lg font-semibold mb-3">Quick Links</h2>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/dashboard" className="hover:text-primary transition-colors">
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/courses" className="hover:text-primary transition-colors">
-                  Courses
-                </Link>
-              </li>
-              <li>
-                <Link href="/subscription" className="hover:text-primary transition-colors">
-                  Subscription
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-primary transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-            </ul>
-          </div>
 
           {/* Social Links */}
           <div>

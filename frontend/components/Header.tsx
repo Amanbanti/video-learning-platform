@@ -112,8 +112,8 @@ export const Header = () => {
                             </MenubarItem>
                         )}
                          {!user.isAdmin && (
-                            <MenubarItem className="cursor-pointer" onClick={() => router.push("/courses")}>
-                                My Courses
+                            <MenubarItem className="cursor-pointer" onClick={() => router.push("/profile")}>
+                                My Profile
                             </MenubarItem>
                         )}
                         {!user.isAdmin && (
