@@ -6,7 +6,8 @@ import {
   updateCourse,
   deleteCourse,
   createChapter,
-  countCoursesByCategory
+  countCoursesByCategory,
+  getCoursesByCategory
 } from "../controllers/courseController.js";
 import upload from "../middleware/upload.js";
 import { authMiddleware, adminMiddleware } from "../middleware/authMiddleware.js";
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.get("/",authMiddleware, getCourses);
 router.get("/:id",authMiddleware, getCourse);
+router.get("/category/:category",authMiddleware, getCoursesByCategory);
 router.post("/",authMiddleware,adminMiddleware, upload.single("coverImage"), createCourse); 
 router.post("/:courseId/chapters",authMiddleware,adminMiddleware,createChapter)
 router.put("/:id",authMiddleware,adminMiddleware, upload.single("coverImage"), updateCourse);

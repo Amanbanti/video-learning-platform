@@ -204,3 +204,25 @@ export const countCoursesByCategory = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
+// @desc   Get all courses by category
+// @route  GET /api/courses/category/:category
+// @access Public
+export const getCoursesByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    const courses = await Course.find({ category });
+
+    if (!courses.length) {
+      return res.status(404).json({ message: 'No courses found for this category' });
+    }
+
+    res.status(200).json(courses);
+  } catch (error) {
+    console.error('Error fetching courses by category:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
