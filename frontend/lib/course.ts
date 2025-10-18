@@ -225,3 +225,9 @@ export async function countCoursesByCategory(category: CategoryEnum): Promise<Re
   const res = await axiosInstance.get(`/courses/count-by-category/${category}`,);
   return res.data; 
   }
+
+
+export async function fetchCourseByCategory(category: CategoryEnum): Promise<Course[]> {
+  const res = await axiosInstance.get(`/courses/category/${category}`);
+  return res.data; 
+}

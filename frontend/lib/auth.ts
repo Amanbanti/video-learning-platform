@@ -139,3 +139,14 @@ export async function changeSubscriptionStatus(userId: string, status: string): 
   const res = await axiosInstance.put(`/users/${userId}/subscription`, { status }, { withCredentials: true })
   return res.data
 }
+
+
+export async function updateTrialVideosWatched(userId: string): Promise<User> {
+  const res = await axiosInstance.patch(`/users/${userId}/trial-video`, {}, { withCredentials: true })
+  return res.data
+}
+
+export async function getUserById(userId: string): Promise<User> {
+  const res = await axiosInstance.get(`/users/${userId}`, { withCredentials: true })
+  return res.data
+}
