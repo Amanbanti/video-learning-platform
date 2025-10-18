@@ -50,10 +50,7 @@ export default function HomePage() {
               <Play className="mr-2 h-5 w-5" />
               Start Learning Now
             </Button>
-            <Button className="cursor-pointer dark:hover:bg-accent"size="lg" variant="outline" onClick={() => router.push(user ? "/courses" : "/auth")}>  
-              Browse Courses
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+        
           </div>
         </div>
       </section>

@@ -5,189 +5,245 @@ import { useRouter, useParams } from "next/navigation"
 import { Button } from "../../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
 import { Badge } from "../../../components/ui/badge"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../..//components/ui/accordion"
-import { ThemeToggle } from "../../../components/theme-toggle"
-import { BookOpen, LogOut, Play, Clock, ArrowLeft, Lock } from "lucide-react"
-import { getCurrentUser, logout } from "../../../lib/auth"
-import { mockCourses, type Course, type Chapter } from "../../../lib/course"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../components/ui/accordion"
+import { BookOpen, Play, Clock, LoaderCircle } from "lucide-react"
+import Header from "../../../components/Header"
+import { toast } from "react-hot-toast"
+import { getCurrentUser, updateTrialVideosWatched } from "../../../lib/auth"
+import { fetchCourseById, type Course } from "../../../lib/course"
+import { YouTubePlayer } from "../../../components/YouTubeVideoPlayer"
 
 export default function CoursePage() {
-  const [user, setUser] = useState(getCurrentUser())
+  const [user, setUser] = useState<any>(getCurrentUser())
   const [course, setCourse] = useState<Course | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [activeChapter, setActiveChapter] = useState<string | null>(null)
+  const [localUser, setLocalUser] = useState<any>(user)
+
+
   const router = useRouter()
   const params = useParams()
   const courseId = params.id as string
 
+  // 🔹 Fetch course
   useEffect(() => {
     if (!user) {
       router.push("/auth")
       return
     }
 
-    const foundCourse = mockCourses.find((c) => c.id === courseId)
-    setCourse(foundCourse || null)
+    const fetchCourse = async () => {
+      try {
+        setLoading(true)
+        const data = await fetchCourseById(courseId)
+        setCourse(data)
+      } catch (err: any) {
+        toast.error(
+          err.response?.data?.message || err.message || "Failed to fetch course details"
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourse()
   }, [user, courseId, router])
 
-  const handleLogout = () => {
-    logout()
-    router.push("/")
+  
+
+
+  const handleChapterSelect = async (chapterId: string) => {
+    const userDataString = localStorage.getItem("currentUser")
+    if (!userDataString) return
+  
+    const currentUser = JSON.parse(userDataString).user
+  
+    try {
+      // Always call API to get updated user
+      const updatedUser = await updateTrialVideosWatched(currentUser._id)
+
+  
+      // Only update the user object, DO NOT update timestamp
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify({ ...JSON.parse(userDataString), user: updatedUser })
+        
+      )
+
+      setLocalUser(updatedUser)
+
+  
+      if (updatedUser.subscriptionStatus === "Trial" || updatedUser.subscriptionStatus === "Pending") {
+        toast.success(
+          `You have watched ${updatedUser.trialVideosWatched} of ${updatedUser.maxTrialVideos} trial videos.`
+        )
+  
+        if (updatedUser.trialVideosWatched >= 4) {
+          toast.error("Trial limit reached. Upgrade to Premium to continue watching.")
+          router.push("/subscription")
+          return
+        }
+      }
+  
+      setActiveChapter(prev => (prev === chapterId ? null : chapterId))
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        toast.error(err.response.data.message || "Trial limit reached.")
+        router.push("/subscription")
+      } else {
+        toast.error("Failed to update trial videos.")
+        console.error(err)
+      }
+    }
   }
 
-  const handleChapterSelect = (chapterId: string) => {
-    const chapter = course?.chapters.find((c) => c.id === chapterId)
-    if (!chapter) return
 
-    // Check if user can access this chapter
-    // if (chapter.isPremium && user?.subscriptionStatus === "trial") {
-    //   if (user.trialVideosWatched >= user.maxTrialVideos) {
-    //     router.push("/subscription")
-    //     return
-    //   }
-    // }
 
-    router.push(`/watch/${courseId}/${chapterId}`)
-  }
-
-  if (!user || !course) {
+  // 🔹 Loading state
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Course not found</h3>
-          <p className="text-muted-foreground mb-4">The course you're looking for doesn't exist.</p>
-          <Button onClick={() => router.push("/dashboard")}>Back to Dashboard</Button>
+      <div>
+        <Header />
+        <div className="flex items-center justify-center min-h-screen">
+          <LoaderCircle className="h-16 w-16 animate-spin text-primary" />
         </div>
       </div>
     )
   }
 
-  const canAccessChapter = (chapter: Chapter) => {
-    // if (!chapter.isPremium) return true
-    if (user.subscriptionStatus === "active") return true
-    if (user.subscriptionStatus === "trial" && user.trialVideosWatched < user.maxTrialVideos) return true
-    return false
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">EduLearn</span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+  // 🔹 No course found
+  if (!course) {
+    return (
+      <div>
+        <Header />
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Course not found</h3>
+            <p className="text-muted-foreground mb-4">The course you're looking for doesn't exist.</p>
+            <Button onClick={() => router.push("/dashboard")}>Back to Dashboard</Button>
           </div>
         </div>
-      </header>
+      </div>
+    )
+  }
+
+  // 🔹 Main page
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
 
       <div className="container mx-auto px-4 py-8">
         {/* Course Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <Badge >
-              {course.category}
-            </Badge>
-           
-          </div>
-
           <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-sm text-muted-foreground">Category:</span>
+            <Badge>{course.category}</Badge>
+          </div>
+          <div className="flex items-center gap-2 pb-4 text-sm text-muted-foreground">
+            <span>Instructor:</span>
+            <span>{course.instructor}</span>
+          </div>
           <p className="text-muted-foreground text-lg mb-6">{course.description}</p>
 
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Play className="h-4 w-4" />
-              <span>{course.chapters.length} chapters</span>
+          {/* ✅ Trial Status Banner */}
+          {localUser && localUser.subscriptionStatus !== "Active" && (
+            <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 p-4 rounded-lg mb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="font-medium mb-2">
+                    {user.subscriptionStatus === "Trial"
+                      ? `You're on Trial Mode — ${localUser.maxTrialVideos-localUser.trialVideosWatched} video${localUser.maxTrialVideos-localUser.trialVideosWatched === 1 ? "" : "s"} left.`
+                      : "Your subscription is pending. You can only watch limited videos until it's approved."}
+                  </p>
+
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-yellow-500 h-3 rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${(localUser.trialVideosWatched/localUser.maxTrialVideos)*100}%` }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between text-xs mt-1">
+                    <span>
+                      Progress: {localUser.trialVideosWatched}/{localUser.maxTrialVideos} videos
+                    </span>
+                    <span>{Math.round(localUser.trialVideosWatched/localUser.maxTrialVideos)*100}%</span>
+                  </div>
+                </div>
+
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="whitespace-nowrap cursor-pointer"
+                  onClick={() => router.push("/subscription")}
+                >
+                  Upgrade to Premium
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              {/* <span>
-                {course.chapters.reduce((total, chapter) => {
-                  const [minutes] = chapter.duration.split(":").map(Number)
-                  return total + minutes
-                }, 0)}{" "}
-                minutes total
-              </span> */}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Course Content */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {/* Chapters List */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
                 <CardTitle>Course Chapters</CardTitle>
-                <CardDescription>
-                  Click on any chapter to start watching. Premium chapters require a subscription.
-                </CardDescription>
+                <CardDescription>Click on any chapter to start watching.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Accordion type="single" collapsible className="w-full">
-                  {course.chapters.map((chapter, index) => (
-                    <AccordionItem key={chapter.id} value={chapter.id}>
-                      <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center justify-between w-full mr-4">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                              {index + 1}
-                            </div>
-                            <div className="text-left">
-                              <div className="font-medium">{chapter.title}</div>
-                              <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                <Clock className="h-3 w-3" />
-                                {/* {chapter.duration} */22}
-                                {true && (
-                                  <>
-                                    <Lock className="h-3 w-3" />
-                                    <span>Premium</span>
-                                  </>
-                                )}
+                  {course.chapters.length > 0 ? (
+                    course.chapters.map((chapter: any, index: number) => (
+                      <AccordionItem key={chapter._id} value={chapter._id}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div className="flex items-center justify-between w-full mr-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                                {index + 1}
+                              </div>
+                              <div className="text-left">
+                                <div className="font-medium">{chapter.title}</div>
+                                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                  <Clock className="h-3 w-3" />
+                                  <span>{chapter.duration} mins</span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="pt-4 pl-11">
-                          {/* <p className="text-muted-foreground mb-4">{chapter.description}</p> */}
-                          <Button
-                            onClick={() => handleChapterSelect(chapter.id)}
-                            disabled={!canAccessChapter(chapter)}
-                            className="w-full sm:w-auto"
-                          >
-                            {canAccessChapter(chapter) ? (
-                              <>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="pt-2 pl-11">
+                            <div className="text-sm text-muted-foreground pb-3">
+                              Description: {chapter.description}
+                            </div>
+
+                            {activeChapter === chapter._id ? (
+                              <div className="aspect-video w-full rounded-lg overflow-hidden">
+                                <YouTubePlayer videoUrl={chapter.videoUrl} />
+                              </div>
+                            ) : (
+                              <Button
+                                onClick={() => handleChapterSelect(chapter._id)}
+                                className="w-full sm:w-auto cursor-pointer"
+                              >
                                 <Play className="h-4 w-4 mr-2" />
                                 Watch Chapter
-                              </>
-                            ) : (
-                              <>
-                                <Lock className="h-4 w-4 mr-2" />
-                                Upgrade to Watch
-                              </>
+                              </Button>
                             )}
-                          </Button>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))
+                  ) : (
+                    <div className="text-center text-muted-foreground col-span-3">
+                      No chapters found.
+                    </div>
+                  )}
                 </Accordion>
               </CardContent>
             </Card>
@@ -195,38 +251,25 @@ export default function CoursePage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Trial Status */}
-            {user.subscriptionStatus === "trial" && (
-              <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
-                <CardHeader>
-                  <CardTitle className="text-lg">Free Trial</CardTitle>
-                  <CardDescription>{user.maxTrialVideos - user.trialVideosWatched} videos remaining</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" onClick={() => router.push("/subscription")}>
-                    Upgrade Now
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Course Stats */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Course Overview</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Chapters</span>
-                  <span className="font-medium">{course.chapters.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Free Chapters</span>
-                  {/* <span className="font-medium">{course.chapters.filter((c) => !c.isPremium).length}</span> */}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Premium Chapters</span>
-                  {/* <span className="font-medium">{course.chapters.filter((c) => c.isPremium).length}</span> */}
+                <div className="text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 pb-4">
+                    <Play className="h-4 w-4" />
+                    <span>{course.chapters.length} chapters</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>
+                      Total Duration:{" "}
+                      {course.chapters.length > 0
+                        ? course.chapters.reduce((acc, c) => acc + Number(c.duration), 0) + " mins"
+                        : "N/A"}
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

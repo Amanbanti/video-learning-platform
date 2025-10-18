@@ -6,7 +6,7 @@ import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
-import { BookOpen, Play, Clock, Star } from "lucide-react"
+import { BookOpen, Play, Clock, Star, LoaderCircle } from "lucide-react"
 import { getCurrentUser } from "../../lib/auth"
 import { mockCourses } from "../../lib/course"
 import Header from "../../components/Header"
@@ -19,6 +19,7 @@ export default function DashboardPage() {
 
   const [countUserCourses, setCountUserCourses] = useState<number>(0)
   const [countCommonCourses, setCountCommonCourses] = useState<number>(0)
+  const [Loading, setLoading] = useState(false)
 
   const router = useRouter()
 
@@ -72,11 +73,14 @@ export default function DashboardPage() {
   
     ;(async () => {
       try {
+        setLoading(true)
         const data = await countCoursesByCategory(userCategories as any)
         setCountUserCourses(data.count || 0)
         setCountCommonCourses(data.common || 0)
       } catch (error) {
         console.error("Error fetching course counts:", error)
+      }finally{
+        setLoading(false)
       }
     })()
   }, [userCategories])
@@ -94,6 +98,18 @@ export default function DashboardPage() {
 
 
   const trialProgress = (user.trialVideosWatched / user.maxTrialVideos) * 100
+
+
+  if (Loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header/>
+        <div className="flex justify-center items-center py-10 w-full col-span-full">
+          <LoaderCircle className="h-18 w-18 animate-spin text-primary" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -159,7 +175,7 @@ export default function DashboardPage() {
                           <span className="text-sm text-muted-foreground">{countUserCourses} Courses</span>
                         </div>
                       </div>
-                      <Button className="w-full group-hover:bg-primary/90">
+                      <Button className="w-full cursor-pointer group-hover:bg-primary/90">
                         <Play className="h-4 w-4 mr-2" />
                         Explore Courses
                       </Button>
@@ -191,7 +207,7 @@ export default function DashboardPage() {
                           <span className="text-sm text-muted-foreground">{countCommonCourses} Courses</span>
                         </div>
                       </div>
-                      <Button className="w-full group-hover:bg-primary/90">
+                      <Button className="w-full group-hover:bg-primary/90 cursor-pointer">
                         <Play className="h-4 w-4 mr-2" />
                         Explore Courses
                       </Button>

@@ -16,6 +16,8 @@ import { BookOpen, LogOut, ArrowLeft, Check, Upload, CreditCard, Smartphone, Ale
 import { getCurrentUser, logout, setCurrentUser } from "../../lib/auth"
 import Header from "../../components/Header"
 
+import {getUserById} from "../../lib/auth"
+
 export default function SubscriptionPage() {
   const [user, setUser] = useState(getCurrentUser())
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly")
@@ -26,16 +28,29 @@ export default function SubscriptionPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!user) {
-      router.push("/auth")
-      return
+    const fetchAndSyncUser = async () => {
+      if (!user) {
+        router.push("/auth")
+        return
+      }
+
+      try {
+        const res = await getUserById(user._id)
+        if (res) {
+          localStorage.setItem(
+            "currentUser",
+            JSON.stringify({ user: res }) 
+          )
+          setUser(res) // ✅ update state as well
+        }
+      } catch (error) {
+        console.error("Failed to sync user data:", error)
+      }
     }
 
-    if (user.subscriptionStatus === "active") {
-      router.push("/dashboard")
-      return
-    }
-  }, [user, router])
+    fetchAndSyncUser()
+  }, [router])
+
 
   const handleLogout = () => {
     logout()
@@ -61,8 +76,8 @@ export default function SubscriptionPage() {
         ...user,
         subscriptionStatus: "pending" as const,
       }
-      setCurrentUser(updatedUser)
-      setUser(updatedUser)
+      // setCurrentUser(updatedUser)
+      // setUser(updatedUser)
       setSubmitSuccess(true)
       setIsSubmitting(false)
     }, 2000)

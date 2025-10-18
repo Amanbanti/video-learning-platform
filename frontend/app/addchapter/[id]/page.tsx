@@ -225,7 +225,7 @@ const handleAddChapter = async () => {
                                         onClick={() => handleChapterSelect(chapter._id)}
                                         className="w-full sm:w-auto"
                                       >
-                                        <Play className="h-4 w-4 mr-2" />
+                                        <Play className="h-4 w-4 mr-2 cursor-pointer" />
                                         Watch Chapter
                                       </Button>
                                     )}
