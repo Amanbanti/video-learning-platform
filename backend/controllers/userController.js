@@ -242,3 +242,52 @@ export const updateUserSubscription = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
+
+
+// PATCH /users/trial-video
+export const updateTrialVideosWatched =  async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) return res.status(400).json({ message: "userId is required" });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.subscriptionStatus === "Active") {
+      return res.json(user); // Premium users can watch unlimited
+    }
+    
+    if (user.subscriptionStatus === "Pending") {
+      if ((user.trialVideosWatched || 0) >= 3) {
+        return res.status(403).json({ message: "Your subscription is pending. Wait admin to approve!" });
+      }
+    }
+    
+    if (user.subscriptionStatus === "Trial") {
+      if ((user.trialVideosWatched || 0) >= 3) {
+        return res.status(403).json({ message: "Trial limit reached. Upgrade to Premium to continue watching." });
+      }
+    }
+
+    user.trialVideosWatched = (user.trialVideosWatched || 0) + 1;
+    await user.save();
+
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
+export const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id); 
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  } 
+};
