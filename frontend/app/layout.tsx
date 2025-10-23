@@ -10,8 +10,13 @@ import { Toaster } from "react-hot-toast"
 import  Footer  from "../components/Footer"
 
 export const metadata: Metadata = {
-  title: "EduLearn - Video Learning Platform",
+  title: "Lernova",
   description: "Premium video courses for Natural and Social sciences",
+  icons: {
+    icon: "/favicon.svg", // ✅ our BookOpen icon
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 }
 
 export default function RootLayout({

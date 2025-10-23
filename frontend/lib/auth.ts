@@ -190,3 +190,30 @@ export async function handlePasswordReset(email: string, newPassword: string): P
   const res = await axiosInstance.post("/users/reset-password", { email, newPassword })
   return res.data
 }
+
+
+export async function updateUserProfile(
+  userId: string,
+  name: string
+): Promise<User> {
+  const res = await axiosInstance.put(
+    `/users/${userId}/profile`,
+    { name }, 
+    { withCredentials: true }
+  )
+  return res.data
+} 
+
+
+export async function updatePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const res = await axiosInstance.put(
+    `/users/${userId}/password`,
+    { currentPassword, newPassword },
+    { withCredentials: true }
+  )
+  return res.data
+}
