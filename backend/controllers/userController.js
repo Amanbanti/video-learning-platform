@@ -3,6 +3,9 @@ import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import jwt from "jsonwebtoken"
+
+
 
 
 // @desc    Register user and send OTP
@@ -291,3 +294,165 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ message: err.message });
   } 
 };
+
+
+
+
+// ✅ Upload payment receipt & update user info
+export const uploadPaymentReceipt = async (req, res) => {
+  const { paymentMethod, paymentAmount, payerPhoneNumber } = req.body
+  const userId = req.params.id
+
+  // ✅ Find user
+  const user = await User.findById(userId)
+  if (!user) {
+    res.status(404)
+    throw new Error("User not found")
+  }
+
+  // ✅ Get uploaded image path
+  const receiptPath = req.file ? req.file.path.replace(/\\/g, "/") : null
+  if (!receiptPath) {
+    res.status(400)
+    throw new Error("Payment receipt image is required")
+  }
+
+  // ✅ Update payment info
+  user.paymentReceipt = receiptPath
+  user.paymentMethod = paymentMethod
+  user.paymentAmount = paymentAmount
+  user.payerPhoneNumber = payerPhoneNumber
+  user.paymentDate = new Date()
+  user.subscriptionStatus = "Pending"
+
+  await user.save()
+
+  res.status(200).json({
+    message: "Payment receipt uploaded successfully",
+    user,
+  })
+}
+
+
+
+
+
+
+
+
+// Generate a random 6-digit OTP
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
+
+// 📩 SEND OTP CONTROLLER
+export const sendOtpController = async (req, res) => {
+  try {
+    const { email } = req.body
+    if (!email) return res.status(400).json({ message: "Email is required" })
+
+    const user = await User.findOne({ email })
+    if (!user) return res.status(404).json({ message: "User not found" })
+
+    // Generate OTP and set expiry (5 minutes)
+    const otp = generateOTP()
+    user.verificationCode = otp
+    user.verificationCodeExpires = Date.now() + 5 * 60 * 1000
+    await user.save()
+
+    // Send OTP via email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    })
+
+    const mailOptions = {
+      from: `"Support Team" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your Password Reset Verification Code",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border-radius:10px;border:1px solid #ddd;">
+          <h2 style="text-align:center;color:#333;">Password Reset Verification</h2>
+          <p style="font-size:16px;">Your verification code is:</p>
+          <div style="font-size:24px;font-weight:bold;text-align:center;margin:20px 0;color:#007bff;">
+            ${otp}
+          </div>
+          <p style="font-size:14px;color:#555;">This code will expire in 5 minutes.</p>
+        </div>
+      `,
+    }
+
+    await transporter.sendMail(mailOptions)
+
+    res.status(200).json({ message: "OTP sent successfully to your email" })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Failed to send OTP" })
+  }
+}
+
+// ✅ VERIFY OTP CONTROLLER
+export const verifyOtpController = async (req, res) => {
+  try {
+    const { email, otp } = req.body
+    if (!email || !otp) return res.status(400).json({ message: "Email and OTP are required" })
+
+    const user = await User.findOne({ email })
+    if (!user) return res.status(404).json({ message: "User not found" })
+
+    if (
+      !user.verificationCode ||
+      user.verificationCode !== otp ||
+      user.verificationCodeExpires < Date.now()
+    ) {
+      return res.status(400).json({ message: "Invalid or expired verification code" })
+    }
+
+    // Clear OTP fields
+    user.verificationCode = undefined
+    user.verificationCodeExpires = undefined
+    await user.save()
+
+    res.status(200).json({ message: "OTP verified successfully"})
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "OTP verification failed" })
+  }
+}
+
+
+
+
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body
+
+    // Validate input
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Email and new password are required." })
+    }
+
+    // Find user
+    const user = await User.findOne({ email })
+    if (!user) {
+      return res.status(404).json({ message: "User not found." })
+    }
+
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+    // Update password and clear verification fields
+    user.password = hashedPassword
+
+    await user.save()
+
+    return res.status(200).json({ message: "Password updated successfully." })
+  } catch (error) {
+    console.error("Reset password error:", error)
+    res.status(500).json({ message: "Server error while resetting password." })
+  }
+}
