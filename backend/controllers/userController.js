@@ -368,7 +368,7 @@ export const sendOtpController = async (req, res) => {
     })
 
     const mailOptions = {
-      from: `"Support Team" <${process.env.EMAIL_USER}>`,
+      from: `"Lernova Support Team Support Team" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your Password Reset Verification Code",
       html: `
@@ -549,6 +549,8 @@ export const fetchPendingUsers = async (req, res) => {
 
 
 
+
+
 export const updateUserPymentSubscription = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -570,6 +572,42 @@ export const updateUserPymentSubscription = async (req, res) => {
     user.subscriptionStatus = subscriptionStatus;
     await user.save();
 
+    // Send email if user is rejected or moved to trial
+    if (subscriptionStatus === "Trial") {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: `"Lernova Support Team" <${process.env.EMAIL_USER}>`,
+        to: user.email,
+        subject: "Payment Receipt Update",
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border-radius:10px;border:1px solid #ddd;">
+            <h2 style="text-align:center;color:#333;">Payment Receipt Update</h2>
+            <p style="font-size:16px;">
+              Dear ${user.name},
+            </p>
+            <p style="font-size:16px;">
+              Your recent payment receipt has been <strong>${subscriptionStatus === "Trial" ? "rejected" : "moved to trial mode"}</strong> due to an invalid or fake receipt.
+            </p>
+            <p style="font-size:16px;">
+              Please try submitting your payment again or contact our support team for assistance.
+            </p>
+            <p style="font-size:14px;color:#555;">
+              Thank you,<br/>Support Team
+            </p>
+          </div>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+    }
+
     res.status(200).json({
       message: `User subscription updated to ${subscriptionStatus}.`,
       user,
@@ -579,6 +617,7 @@ export const updateUserPymentSubscription = async (req, res) => {
     res.status(500).json({ message: "Server error while updating subscription." });
   }
 };
+
 
 
 
