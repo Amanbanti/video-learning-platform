@@ -226,3 +226,20 @@ export const getCoursesByCategory = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+
+
+
+export const getCourseStats = async (req, res) => {
+  try {
+    const totalCourses = await Course.countDocuments();
+
+    res.status(200).json({
+      totalCourses,
+    });
+  } catch (err) {
+    console.error("Error fetching course stats:", err);
+    res.status(500).json({ message: "Failed to fetch course stats." });
+  }
+};
