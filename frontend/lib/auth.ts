@@ -150,3 +150,43 @@ export async function getUserById(userId: string): Promise<User> {
   const res = await axiosInstance.get(`/users/${userId}`, { withCredentials: true })
   return res.data
 }
+
+
+
+
+export async function paymentSubmission(
+  userId: string,
+  paymentReceipt: File,
+  paymentMethod: string,
+  paymentAmount: number,
+  payerPhoneNumber: string
+): Promise<User> {
+  const formData = new FormData()
+  formData.append("paymentReceipt", paymentReceipt)
+  formData.append("paymentMethod", paymentMethod)
+  formData.append("paymentAmount", paymentAmount.toString())
+  formData.append("payerPhoneNumber", payerPhoneNumber)
+
+  const res = await axiosInstance.put(`/users/${userId}/payment-receipt`, formData, {
+    withCredentials: true,
+    headers: { "Content-Type": "multipart/form-data" },
+  })
+
+  return res.data
+}
+
+
+export async function handleEmailSubmit(email: string): Promise<void> {
+  const res = await axiosInstance.post("/users/send-otp", { email })
+  return res.data
+}
+
+export async function handleOtpSubmit(email: string, otp: string): Promise<void> {
+  const res = await axiosInstance.post("/users/verify-otp-reset", { email, otp })
+  return res.data
+}
+
+export async function handlePasswordReset(email: string, newPassword: string): Promise<void> {
+  const res = await axiosInstance.post("/users/reset-password", { email, newPassword })
+  return res.data
+}
