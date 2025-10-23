@@ -532,3 +532,76 @@ export const updatePasswordController = async (req, res) => {
     res.status(500).json({ message: "Failed to update password" });
   }
 };
+
+
+
+export const fetchPendingUsers = async (req, res) => {
+  try {
+    const pendingUsers = await User.find({ subscriptionStatus: "Pending" }).select( 
+      "-password -verificationCode -verificationCodeExpires"
+    );
+    res.json(pendingUsers);
+  }
+  catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+export const updateUserPymentSubscription = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { subscriptionStatus } = req.body;
+
+    // Validate the subscription status
+    const validStatuses = ["Trial", "Pending", "Active"];
+    if (!validStatuses.includes(subscriptionStatus)) {
+      return res.status(400).json({ message: "Invalid subscription status." });
+    }
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Update the subscription status
+    user.subscriptionStatus = subscriptionStatus;
+    await user.save();
+
+    res.status(200).json({
+      message: `User subscription updated to ${subscriptionStatus}.`,
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    res.status(500).json({ message: "Server error while updating subscription." });
+  }
+};
+
+
+
+export const getUserPaymentStats = async (req, res) => {
+  try {
+   // Total regular users (excluding admins)
+const totalUsers = await User.countDocuments({ isAdmin: false });
+
+// Pending payments for regular users
+const pendingPayments = await User.countDocuments({ subscriptionStatus: "Pending", isAdmin: false });
+
+// Total revenue from approved payments (only regular users)
+const usersWithApprovedPayments = await User.find({ subscriptionStatus: "Active", isAdmin: false });
+const totalRevenue = usersWithApprovedPayments.reduce((sum, user) => sum + (user.paymentAmount || 0), 0);
+
+
+    res.status(200).json({
+      totalUsers,
+      pendingPayments,
+      totalRevenue,
+    });
+  } catch (err) {
+    console.error("Error fetching user/payment stats:", err);
+    res.status(500).json({ message: "Failed to fetch stats." });
+  }
+};
