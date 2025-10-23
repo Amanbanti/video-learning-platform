@@ -4,11 +4,9 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
-import { Badge } from "../../components/ui/badge"
 import { Progress } from "../../components/ui/progress"
 import { BookOpen, Play, Clock, Star, LoaderCircle } from "lucide-react"
 import { getCurrentUser } from "../../lib/auth"
-import { mockCourses } from "../../lib/course"
 import Header from "../../components/Header"
 import {countCoursesByCategory} from "../../lib/course"
 
@@ -133,7 +131,7 @@ export default function DashboardPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 {user.maxTrialVideos - user.trialVideosWatched} videos remaining in your free trial
               </p>
-              <Button onClick={() => router.push("/subscription")}>Upgrade to Premium</Button>
+              <Button className="cursor-pointer" onClick={() => router.push("/subscription")}>Upgrade to Premium</Button>
             </CardContent>
           </Card>
         )}

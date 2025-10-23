@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { getCurrentUser, login } from "../../lib/auth"
 import { toast } from "react-hot-toast"
 import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -118,6 +119,16 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               >
                 {showPassword ? <EyeOff className="h-5 w-5 text-gray-500 cursor-pointer" /> : <Eye className="h-5 w-5 text-gray-500 cursor-pointer" />}
             </button>
+          </div>
+
+           {/* Forgot Password */}
+           <div className="text-left pt-4 pb-4">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Forgot password?
+            </Link>
           </div>
 
           <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
