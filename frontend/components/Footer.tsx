@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* About */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">EduLearn</h2>
+            <h2 className="text-lg font-semibold mb-3">Lernova</h2>
             <p className="text-sm text-muted-foreground">
               Empowering students through digital learning. Explore quality educational content for
               Natural, Social, and Common courses.
@@ -66,7 +66,7 @@ export default function Footer() {
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
-          <p>© {currentYear} EduLearn. All rights reserved.</p>
+          <p>© {currentYear} Lernova. All rights reserved.</p>
           <div className="flex gap-4 mt-3 md:mt-0">
             <Link href="/privacy-policy" className="hover:text-primary transition-colors">
               Privacy Policy

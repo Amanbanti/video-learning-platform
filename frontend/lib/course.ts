@@ -231,3 +231,9 @@ export async function fetchCourseByCategory(category: CategoryEnum): Promise<Cou
   const res = await axiosInstance.get(`/courses/category/${category}`);
   return res.data; 
 }
+
+
+export const getCourseStats = async () => {
+  const res = await axiosInstance.get("/courses/dashboard/courses", { withCredentials: true })
+  return res.data
+}

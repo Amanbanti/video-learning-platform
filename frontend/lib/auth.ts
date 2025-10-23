@@ -12,8 +12,13 @@ export interface User {
   paymentReceipt?: string
   naturalOrSocial: "Natural" | "Social";
   freshOrRemedial: "Fresh Man" | "Remedial";
-}
+  paymentMethod?:string
+  paymentAmount?:number
+  paymentDate?:Date
+  payerPhoneNumber?:string
 
+
+}
 
 export interface UserResponse {
   users: User[];
@@ -217,3 +222,26 @@ export async function updatePassword(
   )
   return res.data
 }
+
+
+export const fetchPendingUserPayments = async (): Promise<User[]> => {
+  const res = await axiosInstance.get("/users/payments/pending", { withCredentials: true })
+  return res.data
+}
+
+export async function updateUserSubscription(
+  userId: string,
+  data: { subscriptionStatus: "Trial" | "Pending" | "Active" }
+) {
+  const res = await axiosInstance.put(`/users/${userId}/payment-subscription`, data);
+  return res.data;
+}
+
+
+export const getUserPaymentStats = async () => {
+  const res = await axiosInstance.get("/users/dashboard/users-payments", { withCredentials: true })
+  return res.data
+}
+
+
+

@@ -17,12 +17,13 @@ import EditCourse from "../../components/EditCourse"
 
 import { toast } from "react-hot-toast"
 import {fetchCourses} from "../../lib/course"
-import {getAllUsers} from "../../lib/auth"
+import {getAllUsers,updateUserSubscription} from "../../lib/auth"
 import DashboardStats from "../../components/DashboardStats"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import  CourseCardSkeleton  from "../../components/CourseCardSkeleton"
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../../components/ui/dialog"
 import { DialogHeader } from "../../components/ui/dialog"
+import {fetchPendingUserPayments} from "../../lib/auth"
 import {
   Pagination,
   PaginationContent,
@@ -33,41 +34,11 @@ import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 
 import { changeSubscriptionStatus } from "../../lib/auth"
+import { fi } from "date-fns/locale"
 
 
 
 
-
-// Mock payment requests data
-const mockPaymentRequests: PaymentRequest[] = [
-  {
-    id: "1",
-    userId: "user1",
-    amount: 299,
-    paymentMethod: "telebirr",
-    receiptImage: "/placeholder.svg?height=200&width=300",
-    status: "pending",
-    createdAt: new Date("2024-01-15"),
-  },
-  {
-    id: "2",
-    userId: "user2",
-    amount: 2990,
-    paymentMethod: "cbe",
-    receiptImage: "/placeholder.svg?height=200&width=300",
-    status: "pending",
-    createdAt: new Date("2024-01-14"),
-  },
-  {
-    id: "3",
-    userId: "user3",
-    amount: 299,
-    paymentMethod: "telebirr",
-    receiptImage: "/placeholder.svg?height=200&width=300",
-    status: "approved",
-    createdAt: new Date("2024-01-13"),
-  },
-]
 
 
 
@@ -112,13 +83,20 @@ export interface User {
   trialVideosWatched: number
   maxTrialVideos: number
   paymentReceipt?: string
+  naturalOrSocial: "Natural" | "Social";
+  freshOrRemedial: "Fresh Man" | "Remedial";
+  paymentMethod?:string
+  paymentAmount?:number
+  paymentDate?:Date
+  payerPhoneNumber?:string
+
+
 }
 
 export default function AdminPage() {
 
 
   const [user, setUser] = useState(getCurrentUser())
-  const [paymentRequests, setPaymentRequests] = useState(mockPaymentRequests)
 
   const [activeTab, setActiveTab] = useState("payments");
   
@@ -147,6 +125,10 @@ export default function AdminPage() {
   const [selectedStatus, setSelectedStatus] = useState("")
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [statusLoading, setStatusLoading] = useState(false)
+  const [paymentPendingLoading, setPaymentPendingLoading] = useState(false)
+  const [paymentPendingLoading2, setPaymentPendingLoading2] = useState(false)
+
+  const [paymentRequest, setPaymentRequest]=useState<User[]>([]);
 
   
 
@@ -212,6 +194,27 @@ export default function AdminPage() {
       };
     
       loadUsers();
+    }else if(activeTab == "payments"){
+      const pendingUsers = async () => {
+        try{
+          setPaymentPendingLoading(true)
+          const payments = await fetchPendingUserPayments()
+          setPaymentRequest(payments)
+  
+        }catch (error: any) {
+                toast.error(
+                  error.response?.data?.message || error.message || "Failed to update password."
+                )
+                console.error("Error fetching payment requests:", error)
+        }finally{
+                setPaymentPendingLoading(false) 
+        }
+
+      }
+
+      pendingUsers()
+      
+
     }
   
     
@@ -226,13 +229,36 @@ export default function AdminPage() {
 
 
 
-  const handlePaymentAction = (requestId: string, action: "approve" | "reject") => {
-    setPaymentRequests((prev) =>
-      prev.map((req) =>
-        req.id === requestId ? { ...req, status: action === "approve" ? "approved" : "rejected" } : req,
-      ),
-    )
-  }
+  const handlePaymentAction = async (requestId: string, action: "approve" | "reject") => {
+    try {
+      setPaymentPendingLoading2(true);
+      // Update UI instantly (optimistic update)
+      setPaymentRequest((prev) =>
+        prev.map((req) =>
+          req._id === requestId
+            ? { ...req, subscriptionStatus: action === "approve" ? "Active" : "Trial" }
+            : req
+        )
+      );
+  
+      await updateUserSubscription(requestId, {
+        subscriptionStatus: action === "approve" ? "Active" : "Trial",
+      });
+  
+      toast.success(
+        action === "approve"
+          ? "User subscription activated successfully!"
+          : "User moved to trial successfully."
+      );
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Failed to update subscription status."
+      );
+      console.error("Error updating subscription:", error);
+    }finally {
+      setPaymentPendingLoading2(false);
+    }
+  };
 
 
   const handleSave = async (userId: string | undefined) => {
@@ -310,13 +336,21 @@ export default function AdminPage() {
 
         {/* Main Content */}
         <Tabs  value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger className="cursor-pointer" value="payments">Payment Requests</TabsTrigger>
-            <TabsTrigger className="cursor-pointer" value="courses">Course Management</TabsTrigger>
-            <TabsTrigger className="cursor-pointer" value="users">User Management</TabsTrigger>
-          </TabsList>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger className="cursor-pointer" value="payments">
+            <span className="sm:hidden">Pay R</span>
+            <span className="hidden sm:inline">Payment Requests</span>
+          </TabsTrigger>
+          <TabsTrigger className="cursor-pointer" value="courses">
+            <span className="sm:hidden">Courses</span>
+            <span className="hidden sm:inline">Course Management</span>
+          </TabsTrigger>
+          <TabsTrigger className="cursor-pointer" value="users">
+            <span className="sm:hidden">Users</span>
+            <span className="hidden sm:inline">User Management</span>
+          </TabsTrigger>
+        </TabsList>
 
-          {/* Payment Requests Tab */}
           <TabsContent value="payments" className="space-y-6">
             <Card>
               <CardHeader>
@@ -325,98 +359,199 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {paymentRequests.map((request) => (
-                    <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="h-16 w-24 bg-muted rounded-lg overflow-hidden">
-                          <img
-                            src={request.receiptImage || "/placeholder.svg"}
-                            alt="Payment receipt"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <p className="font-medium">User ID: {request.userId}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {request.amount} ETB via {request.paymentMethod}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{request.createdAt.toLocaleDateString()}</p>
-                        </div>
-                      </div>
+                  {paymentPendingLoading ? (
+                    <div className="flex justify-center items-center py-10">
+                      <LoaderCircle className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : paymentRequest.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center">
+                      No pending payment requests.
+                    </p>
+                  ) : (
+                    paymentRequest.map((request) => {
+                      const imageUrl = request.paymentReceipt?.split("\\").join("/") || "/placeholder.svg";
 
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          variant={
-                            request.status === "approved"
-                              ? "default"
-                              : request.status === "rejected"
+                      return (
+                        <div
+                        key={request._id}
+                        className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 border rounded-lg space-y-4 md:space-y-0"
+                      >
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 cursor-pointer w-full">
+                          <div className="h-40 sm:h-16 w-full sm:w-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <img
+                                  src={imageUrl ? `${process.env.NEXT_PUBLIC_API_URL}/${imageUrl}` : "/placeholder.svg"}
+                                  alt="Payment receipt"
+                                  className="w-full h-full object-cover cursor-pointer"
+                                />
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-3xl p-0">
+                                <DialogHeader>
+                                  <DialogTitle>Payment Receipt</DialogTitle>
+                                </DialogHeader>
+                                <img
+                                  src={imageUrl ? `${process.env.NEXT_PUBLIC_API_URL}/${imageUrl}` : "/placeholder.svg"}
+                                  alt="Payment receipt"
+                                  className="w-full h-auto max-h-[80vh] object-contain"
+                                />
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                      
+                          <div className="flex-1 space-y-1">
+                            <p className="text-sm text-muted-foreground">Name: {request.name}</p>
+                            <p className="text-sm text-muted-foreground">Phone N0: {request.payerPhoneNumber}</p>
+                            <p className="text-sm text-muted-foreground">User ID: {request._id}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {request.paymentAmount} ETB via {request.paymentMethod}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {request.paymentDate
+                                ? new Date(request.paymentDate).toLocaleDateString("en-US", {
+                                    day: "2-digit",
+                                    month: "long",
+                                    year: "numeric",
+                                  })
+                                : "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                          <Badge
+                            variant={
+                              request.subscriptionStatus === "Active"
+                                ? "default"
+                                : request.subscriptionStatus === "Trial"
                                 ? "destructive"
                                 : "secondary"
-                          }
-                        >
-                          {request.status}
-                        </Badge>
-
-                        {request.status === "pending" && (
-                          <div className="flex space-x-2">
-                            <Button size="sm" onClick={() => handlePaymentAction(request.id, "approve")}>
-                              <Check className="h-4 w-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handlePaymentAction(request.id, "reject")}
-                            >
-                              <X className="h-4 w-4 mr-1" />
-                              Reject
-                            </Button>
-                          </div>
-                        )}
+                            }
+                          >
+                            {request.subscriptionStatus}
+                          </Badge>
+                      
+                          {request.subscriptionStatus === "Pending" && (
+                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                              {/* Approve Button with Dialog */}
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" className="cursor-pointer w-full sm:w-auto">
+                                    <Check className="h-4 w-4 mr-1" />
+                                    Approve
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                  <DialogHeader>
+                                    <DialogTitle>Approve Payment</DialogTitle>
+                                    <DialogDescription>
+                                      Are you sure you want to approve this user’s payment?
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="flex justify-end space-x-2 mt-4">
+         
+                                    <Button
+                                      className="bg-green-600 hover:bg-green-700 cursor-pointer"
+                                      onClick={() => handlePaymentAction(request._id, "approve")}
+                                    >
+                                      {paymentPendingLoading2 ? "Approving..." : "Confirm"}
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                      
+                              {/* Reject Button with Dialog */}
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="destructive" className="cursor-pointer w-full sm:w-auto">
+                                    <X className="h-4 w-4 mr-1" />
+                                    Reject
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                  <DialogHeader>
+                                    <DialogTitle>Reject Payment</DialogTitle>
+                                    <DialogDescription>
+                                      Are you sure you want to reject this payment request? This will notify the user.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="flex justify-end space-x-2 mt-4">
+          
+                                    <Button
+                                      variant="destructive"
+                                      className="cursor-pointer"
+                                      onClick={() => handlePaymentAction(request._id, "reject")}
+                                    >
+                                      {paymentPendingLoading2 ? "Rejecting..." : "Confirm"}
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                      
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
+
           {/* Course Management Tab */}
           <TabsContent value="courses" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold">Course Management</h2>
-                <p className="text-muted-foreground">Manage your course </p>
-              </div>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                  {/* Title Section */}
+                  <div>
+                    <h2 className="text-2xl font-bold">Course Management</h2>
+                    <p className="text-muted-foreground">Manage your course</p>
+                  </div>
 
-              {/* Category Filter */}
-              <div className="w-48">
-                  <Select value={category} onValueChange={setCategory} required>
-                  <SelectTrigger id="category" className="w-full cursor-pointer">
-                    <SelectValue placeholder="Search by Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem key={0} value={"all"}  className="cursor-pointer">
-                      All Courses
-                      </SelectItem>
-                    {categoryEnum.map((cat) => (
-                      <SelectItem key={cat} value={cat}  className="cursor-pointer">
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {/* Add Course Button for small screens */}
+                  <div className="md:hidden">
+                    <AddCourseDialog
+                      onCourseUpdated={() => {
+                        setCoursePage(1);
+                        setActiveTab("courses");
+                        setOnCourseCreated((prev) => !prev);
+                      }}
+                    />
+                  </div>
 
+                  {/* Category Filter */}
+                  <div className="w-full md:w-48">
+                    <Select value={category} onValueChange={setCategory} required>
+                      <SelectTrigger id="category" className="w-full cursor-pointer">
+                        <SelectValue placeholder="Search by Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem key={0} value={"all"} className="cursor-pointer">
+                          All Courses
+                        </SelectItem>
+                        {categoryEnum.map((cat) => (
+                          <SelectItem key={cat} value={cat} className="cursor-pointer">
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Add Course Button for medium and larger screens */}
+                  <div className="hidden md:block">
+                    <AddCourseDialog
+                      onCourseUpdated={() => {
+                        setCoursePage(1);
+                        setActiveTab("courses");
+                        setOnCourseCreated((prev) => !prev);
+                      }}
+                    />
+                  </div>
                 </div>
-              
 
-              <AddCourseDialog onCourseUpdated={() => {
-                // Handle course creation logic here
-                setCoursePage(1); // reset to first page
-                setActiveTab("courses"); // ensure tab is active
-                setOnCourseCreated((prev) => !prev); // Trigger refresh after adding a course
-              }} />
-            </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
              {courseLoading ? (
