@@ -12,7 +12,9 @@ import {
     uploadPaymentReceipt,
     sendOtpController,
     verifyOtpController,
-    resetPassword
+    resetPassword,
+    updateUserProfile,
+    updatePasswordController
  } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -35,5 +37,7 @@ router.put("/:id/receipt",authMiddleware, uploadReceipt);
 router.put("/:userId/subscription",authMiddleware,adminMiddleware, updateUserSubscription);
 router.patch("/:userId/trial-video",authMiddleware, updateTrialVideosWatched);
 router.put("/:id/payment-receipt",authMiddleware, upload.single("paymentReceipt"), uploadPaymentReceipt)
+router.put("/:userId/profile",authMiddleware, updateUserProfile);
+router.put("/:userId/password",authMiddleware, updatePasswordController);
 
 export default router;
