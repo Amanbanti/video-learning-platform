@@ -63,6 +63,19 @@ const userSchema = new mongoose.Schema(
     paymentReceipt: {
       type: String, // URL or file path
     },
+    paymentMethod: {
+      type: String,
+    },
+    paymentDate: {
+      type: Date,
+    },  
+    paymentAmount: {
+      type: Number,
+    }, 
+    payerPhoneNumber: {
+      type: String,
+    },
+
   },
   {
     timestamps: true,
