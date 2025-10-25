@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
+import cron from 'node-cron';
+import axios from 'axios';
 
 import { connectDB } from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
@@ -63,6 +65,18 @@ const startServer = async () => {
     app.listen(port, () => {
       console.log(`✅ Server running on port ${port}`);
     });
+
+    // Cron job: ping your server every 60 minutes
+    cron.schedule('0 * * * *', async () => {
+      try {
+        const url = process.env.PING_URL || `http://localhost:${port}/`;
+        await axios.get(url);
+        console.log('✅ Pinged server to prevent sleep');
+      } catch (err) {
+        console.error('❌ Ping failed:', err.message);
+      }
+    });
+
   } catch (err) {
     console.error('❌ Failed to start server:', err);
   }
