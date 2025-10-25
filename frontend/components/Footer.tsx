@@ -25,8 +25,8 @@ export default function Footer() {
           <div>
             <h2 className="text-lg font-semibold mb-3">Contact Us</h2>
             <div className="flex gap-4">
-              <span> Contact Phone : 0941670553 </span>
-              <span> Contact Email:  amanuelasfaw68@gmail.com</span>
+              <span className="text-sm text-muted-foreground"> Phone : 0941670553 </span>
+              <span className="text-sm text-muted-foreground"> Email:  amanuelasfaw68@gmail.com</span>
             </div>
           </div>
         </div>
