@@ -18,9 +18,13 @@ const port = process.env.PORT || 5001;
 
 // Allow frontend to talk to backend
 app.use(cors({
-  origin: ['https://video-learning-platform-znaf.vercel.app' || 'http://localhost:3000'],
+  origin: [
+    'https://video-learning-platform-znaf.vercel.app', // production frontend
+    'http://localhost:3000'                             // local dev
+  ],
   credentials: true,
 }));
+
 
 // Set __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
