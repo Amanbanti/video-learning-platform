@@ -32,5 +32,4 @@ It allows users to learn through interactive video courses, manage subscriptions
 
 ---
 
-## 🏗️ Project Structure
 
