@@ -34,14 +34,7 @@ export default function Footer() {
               >
                 <Facebook className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
               </Link>
-              <Link
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
-              >
-                <Twitter className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
-              </Link>
+         
               <Link
                 href="https://instagram.com"
                 target="_blank"
@@ -68,12 +61,11 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
           <p>© {currentYear} Lernova. All rights reserved.</p>
           <div className="flex gap-4 mt-3 md:mt-0">
-            <Link href="/privacy-policy" className="hover:text-primary transition-colors">
-              Privacy Policy
-            </Link>
             <Link href="/terms" className="hover:text-primary transition-colors">
               Terms of Service
             </Link>
+            <span> Contact Phone :  0941670553 </span>
+            <span> Contact Email: example@gmail.com</span>
           </div>
         </div>
       </div>

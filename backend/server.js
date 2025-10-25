@@ -18,7 +18,7 @@ const port = process.env.PORT || 5001;
 
 // Allow frontend to talk to backend
 app.use(cors({
-  origin: ['http://localhost:3000'], // Local dev frontend
+  origin: ['video-learning-platform-theta.vercel.app' || 'http://localhost:3000'],
   credentials: true,
 }));
 
