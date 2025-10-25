@@ -10,7 +10,7 @@ import { Toaster } from "react-hot-toast"
 import  Footer  from "../components/Footer"
 
 export const metadata: Metadata = {
-  title: "Lernova",
+  title: "A++",
   description: "Premium video courses for Natural and Social sciences",
   icons: {
     icon: "/favicon.svg", // ✅ our BookOpen icon

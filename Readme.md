@@ -1,6 +1,6 @@
-# 🎓 Lernova – Video Learning Platform
+# 🎓 A++ – Video Learning Platform
 
-Lernova is a modern **video learning platform** built with **Next.js**, **Node.js**, and **Tailwind CSS**.  
+A++ is a modern **video learning platform** built with **Next.js**, **Node.js**, and **Tailwind CSS**.  
 It allows users to learn through interactive video courses, manage subscriptions, and track their progress in an intuitive and responsive UI.
 
 ---

@@ -655,7 +655,7 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>User Management</CardTitle>
-                      <CardDescription>Manage user accounts and subscriptions</CardDescription>
+                      <CardDescription>Manage user accounts</CardDescription>
                     </div>
 
                     {/* 🔍 Search Input */}
@@ -681,37 +681,43 @@ export default function AdminPage() {
                     <div className="space-y-4">
                       {Array.isArray(users) && users.length > 0 ? (
                         users.map((user) => (
-                          <div key={user._id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-muted-foreground">User ID: {user._id}</p>
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                            </div>
+                          <div
+                              key={user._id}
+                              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg space-y-3 sm:space-y-0"
+                            >
+                              {/* User Info */}
+                              <div>
+                                <p className="font-medium">{user.name}</p>
+                                <p className="text-muted-foreground">User ID: {user._id}</p>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                              </div>
 
-                            <div className="flex items-center space-x-4">
-                              <Badge
-                                variant={
-                                  user.subscriptionStatus === "Active"
-                                    ? "default"
-                                    : user.subscriptionStatus === "Trial"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                              >
-                                {user.subscriptionStatus}
-                              </Badge>
+                              {/* Badge and Button */}
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                                <Badge
+                                  variant={
+                                    user.subscriptionStatus === "Active"
+                                      ? "default"
+                                      : user.subscriptionStatus === "Trial"
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  className="self-start sm:self-auto"
+                                >
+                                  {user.subscriptionStatus}
+                                </Badge>
 
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="cursor-pointer"
-                                onClick={() => handleOpenDialog(user.subscriptionStatus, user._id)}
-                              >
-                                <Edit className="h-3 w-3 mr-1" />
-                                Edit
-                              </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="cursor-pointer w-full sm:w-auto"
+                                  onClick={() => handleOpenDialog(user.subscriptionStatus, user._id)}
+                                >
+                                  <Edit className="h-3 w-3 mr-1" />
+                                  Edit
+                                </Button>
+                              </div>
                             </div>
-                          </div>
                         ))
                       ) : (
                         <p className="text-sm text-muted-foreground text-center">No users found.</p>
