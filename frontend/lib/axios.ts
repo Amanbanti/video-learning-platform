@@ -1,11 +1,13 @@
-import axios from "axios"
+import axios from "axios";
 
-const BASE_URL = "http://localhost:5001"
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001"; // fallback for local dev
 
 export const axiosInstance = axios.create({
-  baseURL: BASE_URL + "/api",
-  withCredentials: true, // important if you use cookies
-})
+  baseURL: `${BASE_URL}/api`,
+  withCredentials: true, // keep this if you use cookies
+});
+
 
 // // Add a response interceptor to handle expired tokens
 // axiosInstance.interceptors.response.use(
