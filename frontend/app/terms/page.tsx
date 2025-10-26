@@ -4,8 +4,8 @@ import React from "react";
 
 export default function TermsOfService() {
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto bg-white shadow-md rounded-2xl overflow-hidden">
+    <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto bg-card text-card-foreground shadow-md rounded-2xl overflow-hidden">
         {/* Header */}
         <header className="px-6 py-8 sm:px-10 sm:py-10 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white">
           <h1 className="text-2xl sm:text-3xl font-semibold">Terms of Service</h1>

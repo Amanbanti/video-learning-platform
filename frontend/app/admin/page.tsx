@@ -563,7 +563,7 @@ export default function AdminPage() {
                 ) : (
                   courses.map((course) => {
                     const imageUrl = course.coverImageUrl?.split("\\").join("/");
-  
+
                         return (
                           <Card key={course._id}>
                             <CardHeader className="pb-4">
@@ -607,7 +607,7 @@ export default function AdminPage() {
                                     </Button>
                                   </DialogTrigger>
 
-                                  <DialogContent className="sm:max-w-lg bg-white text-black shadow-xl rounded-lg z-[9999]">
+                                  <DialogContent className="sm:max-w-lg bg-popover text-popover-foreground shadow-xl rounded-lg z-[9999]">
                                     <DialogHeader>
                                       <DialogTitle>Delete Course</DialogTitle>
                                       <DialogDescription>
@@ -724,7 +724,7 @@ export default function AdminPage() {
               {/* Single Dialog for Editing Subscription */}
               {editingUserId && (
                 <Dialog open={open} onOpenChange={setOpen}>
-                  <DialogContent className="sm:max-w-md bg-white text-black shadow-xl rounded-lg">
+                  <DialogContent className="sm:max-w-md bg-popover text-popover-foreground shadow-xl rounded-lg">
                     <DialogHeader>
                       <DialogTitle>Edit Subscription Status</DialogTitle>
                       <DialogDescription>
