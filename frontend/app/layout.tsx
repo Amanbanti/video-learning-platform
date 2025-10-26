@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import Footer from "../components/Footer";
+import ClientThemeSync from "../components/ClientThemeSync";
 
 export const metadata: Metadata = {
   title: "Lernova",
@@ -28,10 +29,11 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
-            enableSystem={false}
+            defaultTheme="system"
+            enableSystem={true}
             disableTransitionOnChange
           >
+            <ClientThemeSync />
             {children}
             <Footer />
           </ThemeProvider>

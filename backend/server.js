@@ -16,9 +16,16 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5001;
 
+// Trust proxy for correct protocol detection (Vercel/Proxies)
+app.set('trust proxy', 1);
+
 // Allow frontend to talk to backend
+const allowedOrigins = [
+  process.env.FRONTEND_ORIGIN,
+  'http://localhost:3000',
+].filter(Boolean);
 app.use(cors({
-  origin: ['https://video-learning-platform-znaf.vercel.app' || 'http://localhost:3000'],
+  origin: allowedOrigins,
   credentials: true,
 }));
 

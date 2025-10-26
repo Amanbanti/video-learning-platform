@@ -45,7 +45,7 @@ export const registerUser = async (req, res) => {
       return res.status(500).json({ message: "User creation failed" });
     }
     
-    generateToken(res, user);
+    generateToken(req, res, user);
 
 
     // Send OTP via email
@@ -130,7 +130,7 @@ export const loginUser = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
     // User exists, generate token
-    generateToken(res, user);
+    generateToken(req, res, user);
 
     res.status(200).json({ user });
   } catch (err) {
