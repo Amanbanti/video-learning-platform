@@ -1,37 +1,37 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
-import { Analytics } from "@vercel/analytics/next"
-import { ThemeProvider } from "../components/theme-provider"
-import { Suspense } from "react"
-import "./globals.css"
-import { Toaster } from "react-hot-toast"
-import  Footer  from "../components/Footer"
+import type React from "react";
+import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { ThemeProvider } from "../components/theme-provider";
+import { Suspense } from "react";
+import "./globals.css";
+import { Toaster } from "react-hot-toast";
+import Footer from "../components/Footer";
 
 export const metadata: Metadata = {
   title: "Lernova",
   description: "Premium video courses for Natural and Social sciences",
   icons: {
-    icon: "/favicon.svg", // ✅ our BookOpen icon
+    icon: "/favicon.svg",
     shortcut: "/favicon.svg",
     apple: "/favicon.svg",
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-  {/* <link href="./globals.css" rel="stylesheet"></link> */}
-</head>
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="font-sans">
         <Suspense fallback={null}>
-          <ThemeProvider attribute="class"   defaultTheme="light" enableSystem={false}  disableTransitionOnChange>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
             {children}
             <Footer />
           </ThemeProvider>
@@ -40,5 +40,5 @@ export default function RootLayout({
         <Toaster />
       </body>
     </html>
-  )
+  );
 }
