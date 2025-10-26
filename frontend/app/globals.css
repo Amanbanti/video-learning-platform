@@ -1,10 +1,6 @@
-@import "tw-animate-css";
-@import "tailwindcss";
-
-@custom-variant dark (&:is(.dark *));
-
+/* Define CSS variables and theme tokens before Tailwind imports so utilities like border-border resolve */
 :root {
-  /* Updated color tokens for educational platform with green theme */
+  /* Light theme color tokens (CSS vars for optional external use) */
   --background: oklch(1 0 0);
   --foreground: oklch(0.25 0 0);
   --card: oklch(0.98 0.02 120);
@@ -40,43 +36,8 @@
   --sidebar-ring: oklch(0.45 0.15 142);
 }
 
-.dark {
-  /* Updated dark mode colors for educational platform */
-  --background: oklch(0.1 0 0);
-  --foreground: oklch(0.95 0 0);
-  --card: oklch(0.15 0 0);
-  --card-foreground: oklch(0.95 0 0);
-  --popover: oklch(0.1 0 0);
-  --popover-foreground: oklch(0.95 0 0);
-  --primary: oklch(0.6 0.2 142);
-  --primary-foreground: oklch(0.1 0 0);
-  --secondary: oklch(0.2 0 0);
-  --secondary-foreground: oklch(0.95 0 0);
-  --muted: oklch(0.2 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.7 0.2 120);
-  --accent-foreground: oklch(0.1 0 0);
-  --destructive: oklch(0.5 0.2 25);
-  --destructive-foreground: oklch(0.95 0 0);
-  --border: oklch(0.2 0 0);
-  --input: oklch(0.2 0 0);
-  --ring: oklch(0.6 0.2 142);
-  --chart-1: oklch(0.6 0.2 142);
-  --chart-2: oklch(0.7 0.2 120);
-  --chart-3: oklch(0.6 0.2 25);
-  --chart-4: oklch(0.65 0.2 60);
-  --chart-5: oklch(0.55 0.15 200);
-  --sidebar: oklch(0.15 0 0);
-  --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.6 0.2 142);
-  --sidebar-primary-foreground: oklch(0.1 0 0);
-  --sidebar-accent: oklch(0.2 0 0);
-  --sidebar-accent-foreground: oklch(0.95 0 0);
-  --sidebar-border: oklch(0.2 0 0);
-  --sidebar-ring: oklch(0.6 0.2 142);
-}
-
-@theme inline {
+/* Map CSS variables to Tailwind v4 theme tokens */
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-background: var(--background);
@@ -117,11 +78,52 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Enable dark variant via class strategy */
+@custom-variant dark (&:is(.dark *));
+
+/* Dark theme token overrides (class strategy) */
+@theme .dark {
+  --color-background: oklch(0.1 0 0);
+  --color-foreground: oklch(0.95 0 0);
+  --color-card: oklch(0.15 0 0);
+  --color-card-foreground: oklch(0.95 0 0);
+  --color-popover: oklch(0.1 0 0);
+  --color-popover-foreground: oklch(0.95 0 0);
+  --color-primary: oklch(0.6 0.2 142);
+  --color-primary-foreground: oklch(0.1 0 0);
+  --color-secondary: oklch(0.2 0 0);
+  --color-secondary-foreground: oklch(0.95 0 0);
+  --color-muted: oklch(0.2 0 0);
+  --color-muted-foreground: oklch(0.7 0 0);
+  --color-accent: oklch(0.7 0.2 120);
+  --color-accent-foreground: oklch(0.1 0 0);
+  --color-destructive: oklch(0.5 0.2 25);
+  --color-destructive-foreground: oklch(0.95 0 0);
+  --color-border: oklch(0.2 0 0);
+  --color-input: oklch(0.2 0 0);
+  --color-ring: oklch(0.6 0.2 142);
+  --color-chart-1: oklch(0.6 0.2 142);
+  --color-chart-2: oklch(0.7 0.2 120);
+  --color-chart-3: oklch(0.6 0.2 25);
+  --color-chart-4: oklch(0.65 0.2 60);
+  --color-chart-5: oklch(0.55 0.15 200);
+  --color-sidebar: oklch(0.15 0 0);
+  --color-sidebar-foreground: oklch(0.95 0 0);
+  --color-sidebar-primary: oklch(0.6 0.2 142);
+  --color-sidebar-primary-foreground: oklch(0.1 0 0);
+  --color-sidebar-accent: oklch(0.2 0 0);
+  --color-sidebar-accent-foreground: oklch(0.95 0 0);
+  --color-sidebar-border: oklch(0.2 0 0);
+  --color-sidebar-ring: oklch(0.6 0.2 142);
+}
+
+/* Now load Tailwind so utilities resolve with tokens defined above */
+@import "tailwindcss";
+
+/* Optional: animations after Tailwind */
+@import "tw-animate-css";
+
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground font-sans; }
 }
