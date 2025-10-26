@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 
-// Extend the Window interface to include the YT property
+// Extend the Window interface to include the YT property and ReactNativeWebView bridge
 declare global {
   interface Window {
     YT: any;
     onYouTubeIframeAPIReady: () => void;
+    ReactNativeWebView?: { postMessage: (msg: string) => void };
   }
 }
 
@@ -218,44 +219,101 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
     }
   };
 
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
+  // Orientation helpers (RN WebView bridge first, then web fallback)
+  const postToRN = (payload: any) => {
+    try {
+      window.ReactNativeWebView?.postMessage(JSON.stringify(payload));
+    } catch {}
+  };
 
-    if (!isFullscreen) {
-      // Enter fullscreen
-      if (containerRef.current.requestFullscreen) {
-        containerRef.current.requestFullscreen();
-      } else if ((containerRef.current as any).webkitRequestFullscreen) {
-        (containerRef.current as any).webkitRequestFullscreen();
-      } else if ((containerRef.current as any).msRequestFullscreen) {
-        (containerRef.current as any).msRequestFullscreen();
+  const lockLandscape = async () => {
+    postToRN({ type: "ORIENTATION_LOCK", orientation: "LANDSCAPE" });
+    // Web fallback: lock orientation (works in fullscreen-capable browsers)
+    try {
+      if ((screen as any).orientation?.lock) {
+        await (screen as any).orientation.lock("landscape");
       }
-    } else {
-      // Exit fullscreen
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if ((document as any).webkitExitFullscreen) {
-        (document as any).webkitExitFullscreen();
-      } else if ((document as any).msExitFullscreen) {
-        (document as any).msExitFullscreen();
-      }
+    } catch {
+      // ignore
     }
   };
 
-  // Listen for fullscreen changes
+  const lockPortrait = async () => {
+    postToRN({ type: "ORIENTATION_LOCK", orientation: "PORTRAIT" });
+    try {
+      if ((screen as any).orientation?.lock) {
+        await (screen as any).orientation.lock("portrait");
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const unlockOrientation = () => {
+    postToRN({ type: "ORIENTATION_UNLOCK" });
+    try {
+      if ((screen as any).orientation?.unlock) {
+        (screen as any).orientation.unlock();
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (!isFullscreen) {
+        // Enter fullscreen then lock orientation to landscape
+        if (containerRef.current.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        } else if ((containerRef.current as any).webkitRequestFullscreen) {
+          (containerRef.current as any).webkitRequestFullscreen();
+        } else if ((containerRef.current as any).msRequestFullscreen) {
+          (containerRef.current as any).msRequestFullscreen();
+        }
+        await lockLandscape();
+      } else {
+        // Exit fullscreen then restore portrait
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        } else if ((document as any).msExitFullscreen) {
+          (document as any).msExitFullscreen();
+        }
+        // Some browsers require locking after exiting
+        await lockPortrait();
+        // Or if unsupported, at least try to unlock
+        unlockOrientation();
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  // Listen for fullscreen changes and sync orientation too
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+    const handleFullscreenChange = async () => {
+      const nowFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(nowFullscreen);
+      try {
+        if (nowFullscreen) await lockLandscape();
+        else await lockPortrait();
+      } catch {
+        // ignore
+      }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange as any);
+    document.addEventListener("msfullscreenchange", handleFullscreenChange as any);
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange as any);
+      document.removeEventListener("msfullscreenchange", handleFullscreenChange as any);
     };
   }, []);
 
@@ -273,12 +331,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
 
   return (
     <div ref={containerRef} className="w-full max-w-4xl mx-auto aspect-video rounded-lg overflow-hidden relative">
-      {/* YouTube Player Container - Using your exact structure */}
-      <div
-        className="absolute top-0 left-0 w-[300%] h-full -ml-[100%] pointer-events-none"
-        style={{ transformOrigin: "top left" }}
-      >
-        {/* This div will contain the YouTube player created by the API */}
+      {/* YouTube Player Container - responsive to parent aspect ratio */}
+      <div className="absolute inset-0 pointer-events-none">
         <div id="youtube-player" className="w-full h-full"></div>
       </div>
 
