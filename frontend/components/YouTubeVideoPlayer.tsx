@@ -332,12 +332,12 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
   return (
     <div ref={containerRef} className="w-full max-w-4xl mx-auto aspect-video rounded-lg overflow-hidden relative">
       {/* YouTube Player Container - responsive to parent aspect ratio */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0">
         <div id="youtube-player" className="w-full h-full"></div>
       </div>
 
       {/* Custom Controls Overlay */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 z-10 pointer-events-none">
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pointer-events-auto">
           {/* Progress Bar */}
           <div 
