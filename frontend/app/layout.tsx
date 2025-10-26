@@ -26,6 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+  {/* <link href="./globals.css" rel="stylesheet"></link> */}
+</head>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={null}>
           <ThemeProvider attribute="class"   defaultTheme="light" enableSystem={false}  disableTransitionOnChange>
