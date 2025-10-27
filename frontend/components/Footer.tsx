@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* About */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">Lernova</h2>
+            <h2 className="text-lg font-semibold mb-3">A++</h2>
             <p className="text-sm text-muted-foreground">
               Empowering students through digital learning. Explore quality educational content for
               Natural, Social, and Common courses.
@@ -24,34 +24,10 @@ export default function Footer() {
 
           {/* Social Links */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">Follow Us</h2>
-            <div className="flex gap-4">
-              <Link
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
-              >
-                <Facebook className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
-              </Link>
-         
-              <Link
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
-              >
-                <Instagram className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
-              </Link>
-              <Link
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full bg-muted hover:bg-primary/10 transition-colors"
-              >
-                <Linkedin className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
-              </Link>
-            </div>
+            <h2 className="text-lg font-semibold mb-3">Contact Us</h2>
+            <span className="text-sm text-muted-foreground"> Phone :  0941670553 </span>
+            <span className="text-sm text-muted-foreground"> Email:  amanuelasfaw68@gmail.com</span>
+            <span className="text-sm text-muted-foreground"> Telegram:  @amanigrt</span>
           </div>
         </div>
 
@@ -59,13 +35,9 @@ export default function Footer() {
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
-          <p>© {currentYear} Lernova. All rights reserved.</p>
+          <p>© {currentYear} A++. All rights reserved.</p>
           <div className="flex gap-4 mt-3 md:mt-0">
-            <Link href="/terms" className="hover:text-primary transition-colors">
-              Terms of Service
-            </Link>
-            <span> Contact Phone :  0941670553 </span>
-            <span> Contact Email: example@gmail.com</span>
+    
           </div>
         </div>
       </div>

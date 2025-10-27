@@ -17,9 +17,9 @@ export default function TermsOfService() {
         {/* Body */}
         <div className="px-6 py-8 sm:px-10 sm:py-10">
           <p className="text-sm sm:text-base leading-relaxed">
-            Welcome to <strong>Lernova</strong>! These Terms of Service ("Terms") govern your use of our
+            Welcome to <strong>A++</strong>! These Terms of Service ("Terms") govern your use of our
             online learning platform, accessible via our website and mobile applications (the "Service").
-            By using Lernova, you agree to these Terms. If you do not agree, please do not use our Service.
+            By using A++, you agree to these Terms. If you do not agree, please do not use our Service.
           </p>
 
           {/* 1. Eligibility */}
@@ -27,7 +27,7 @@ export default function TermsOfService() {
             <h3 className="text-xl font-semibold">1. Eligibility</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
               You must be at least 13 years old (or the minimum legal age in your country) to create an
-              account or use Lernova. If you are under 18, you may only use the platform under the
+              account or use A++. If you are under 18, you may only use the platform under the
               supervision of a parent or guardian.
             </p>
           </section>
@@ -49,12 +49,12 @@ export default function TermsOfService() {
           <section id="use-of-service" className="mt-8">
             <h3 className="text-xl font-semibold">3. Use of the Service</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
-              Lernova provides video-based educational content. You agree to use the Service only for
+              A++ provides video-based educational content. You agree to use the Service only for
               lawful purposes and in compliance with these Terms. You may not:
             </p>
             <ul className="list-disc list-inside mt-3 space-y-2 text-sm sm:text-base">
               <li>Copy, distribute, or resell content without permission.</li>
-              <li>Use automated systems (bots, scrapers) to access Lernova.</li>
+              <li>Use automated systems (bots, scrapers) to access A++.</li>
               <li>Post or share harmful, defamatory, or illegal content.</li>
               <li>Interfere with the functionality or security of the platform.</li>
             </ul>
@@ -64,7 +64,7 @@ export default function TermsOfService() {
           <section id="subscription" className="mt-8">
             <h3 className="text-xl font-semibold">4. Subscriptions and payments</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
-              Lernova offers both free and paid content. Paid subscriptions grant you access to premium
+              A++ offers both free and paid content. Paid subscriptions grant you access to premium
               courses and features as long as your payment remains current. Payments are processed through
               secure third-party providers.
             </p>
@@ -79,7 +79,7 @@ export default function TermsOfService() {
             <h3 className="text-xl font-semibold">5. User content</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
               You may upload or submit comments, reviews, or other content. By submitting content to
-              Lernova, you grant us a worldwide, royalty-free, non-exclusive license to display,
+              A++, you grant us a worldwide, royalty-free, non-exclusive license to display,
               reproduce, and distribute your content for platform operation and marketing.
             </p>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
@@ -92,8 +92,8 @@ export default function TermsOfService() {
           <section id="intellectual-property" className="mt-8">
             <h3 className="text-xl font-semibold">6. Intellectual property</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
-              All content on Lernova, including videos, graphics, logos, and software, is owned by
-              Lernova or its licensors and protected by copyright and trademark laws. Unauthorized use of
+              All content on A++, including videos, graphics, logos, and software, is owned by
+              A++ or its licensors and protected by copyright and trademark laws. Unauthorized use of
               our content is prohibited.
             </p>
           </section>
@@ -102,7 +102,7 @@ export default function TermsOfService() {
           <section id="termination" className="mt-8">
             <h3 className="text-xl font-semibold">7. Termination</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
-              We may suspend or terminate your access to Lernova at any time, with or without notice, if
+              We may suspend or terminate your access to A++ at any time, with or without notice, if
               you violate these Terms or engage in fraudulent or abusive activities.
             </p>
           </section>
@@ -111,7 +111,7 @@ export default function TermsOfService() {
           <section id="disclaimer" className="mt-8">
             <h3 className="text-xl font-semibold">8. Disclaimer of warranties</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
-              Lernova and its content are provided “as is” without warranties of any kind, whether express
+              A++ and its content are provided “as is” without warranties of any kind, whether express
               or implied, including but not limited to accuracy, reliability, or fitness for a particular
               purpose.
             </p>
@@ -121,7 +121,7 @@ export default function TermsOfService() {
           <section id="liability" className="mt-8">
             <h3 className="text-xl font-semibold">9. Limitation of liability</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
-              Lernova shall not be liable for any indirect, incidental, or consequential damages arising
+              A++ shall not be liable for any indirect, incidental, or consequential damages arising
               from your use or inability to use the Service, even if advised of such damages.
             </p>
           </section>
@@ -131,7 +131,7 @@ export default function TermsOfService() {
             <h3 className="text-xl font-semibold">10. Changes to these Terms</h3>
             <p className="mt-2 text-sm sm:text-base leading-relaxed">
               We may update these Terms from time to time. Material changes will be communicated via email
-              or through the platform. Continued use of Lernova after updates constitutes acceptance of
+              or through the platform. Continued use of A++ after updates constitutes acceptance of
               the new Terms.
             </p>
           </section>
@@ -153,7 +153,7 @@ export default function TermsOfService() {
             </p>
             <address className="not-italic mt-3 text-sm sm:text-base"> 
               <div>
-                <strong>Email:</strong> support@lernova.example
+                <strong>Email:</strong> support@A++.example
               </div>
               <div>
                 <strong>Phone:</strong> 0941670553

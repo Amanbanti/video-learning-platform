@@ -19,11 +19,43 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(false)
   const [activeChapter, setActiveChapter] = useState<string | null>(null)
   const [localUser, setLocalUser] = useState<any>(user)
-
+  const [overlayOpen, setOverlayOpen] = useState(false)
+  const [overlayVideoUrl, setOverlayVideoUrl] = useState<string | null>(null)
 
   const router = useRouter()
   const params = useParams()
   const courseId = params.id as string
+
+  // Post message to RN WebView for orientation control
+  const postToRN = (payload: any) => {
+    try {
+      // @ts-ignore
+      window.ReactNativeWebView?.postMessage(JSON.stringify(payload));
+    } catch {}
+  };
+  const lockLandscape = () => postToRN({ type: "ORIENTATION_LOCK", orientation: "LANDSCAPE" });
+  const lockPortrait = () => postToRN({ type: "ORIENTATION_LOCK", orientation: "PORTRAIT" });
+
+  useEffect(() => {
+    // Prevent background scroll when overlay is open
+    if (overlayOpen) {
+      document.body.classList.add('overflow-hidden');
+      lockLandscape();
+    } else {
+      document.body.classList.remove('overflow-hidden');
+      lockPortrait();
+    }
+    return () => document.body.classList.remove('overflow-hidden');
+  }, [overlayOpen]);
+
+  const openPlayerOverlay = (videoUrl: string) => {
+    setOverlayVideoUrl(videoUrl);
+    setOverlayOpen(true);
+  };
+  const closePlayerOverlay = () => {
+    setOverlayOpen(false);
+    setOverlayVideoUrl(null);
+  };
 
   // 🔹 Fetch course
   useEffect(() => {
@@ -49,29 +81,19 @@ export default function CoursePage() {
     fetchCourse()
   }, [user, courseId, router])
 
-  
-
-
-  const handleChapterSelect = async (chapterId: string) => {
+  const handleChapterSelect = async (chapterId: string, videoUrl: string) => {
     const userDataString = localStorage.getItem("currentUser")
     if (!userDataString) return
   
     const currentUser = JSON.parse(userDataString).user
   
     try {
-      // Always call API to get updated user
       const updatedUser = await updateTrialVideosWatched(currentUser._id)
-
-  
-      // Only update the user object, DO NOT update timestamp
       localStorage.setItem(
         "currentUser",
         JSON.stringify({ ...JSON.parse(userDataString), user: updatedUser })
-        
       )
-
       setLocalUser(updatedUser)
-
   
       if (updatedUser.subscriptionStatus === "Trial" || updatedUser.subscriptionStatus === "Pending") {
         toast.success(
@@ -86,6 +108,8 @@ export default function CoursePage() {
       }
   
       setActiveChapter(prev => (prev === chapterId ? null : chapterId))
+      // Open full-screen overlay player
+      openPlayerOverlay(videoUrl)
     } catch (err: any) {
       if (err.response?.status === 403) {
         toast.error(err.response.data.message || "Trial limit reached.")
@@ -96,8 +120,6 @@ export default function CoursePage() {
       }
     }
   }
-
-
 
   // 🔹 Loading state
   if (loading) {
@@ -222,19 +244,13 @@ export default function CoursePage() {
                               Description: {chapter.description}
                             </div>
 
-                            {activeChapter === chapter._id ? (
-                              <div className="aspect-video w-full rounded-lg overflow-hidden">
-                                <YouTubePlayer videoUrl={chapter.videoUrl} />
-                              </div>
-                            ) : (
-                              <Button
-                                onClick={() => handleChapterSelect(chapter._id)}
-                                className="w-full sm:w-auto cursor-pointer"
-                              >
-                                <Play className="h-4 w-4 mr-2" />
-                                Watch Chapter
-                              </Button>
-                            )}
+                            <Button
+                              onClick={() => handleChapterSelect(chapter._id, chapter.videoUrl)}
+                              className="w-full sm:w-auto cursor-pointer"
+                            >
+                              <Play className="h-4 w-4 mr-2" />
+                              Watch Chapter
+                            </Button>
                           </div>
                         </AccordionContent>
                       </AccordionItem>
@@ -276,6 +292,21 @@ export default function CoursePage() {
           </div>
         </div>
       </div>
+
+      {overlayOpen && overlayVideoUrl && (
+        <div className="fixed inset-0 z-[100] bg-black">
+          {/* Full-screen custom player without YouTube UI */}
+          <YouTubePlayer videoUrl={overlayVideoUrl} fullScreen />
+          {/* Close button */}
+          <button
+            onClick={closePlayerOverlay}
+            className="absolute top-3 right-3 text-white/90 hover:text-white p-2"
+            aria-label="Close player"
+          >
+            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12l-4.9 4.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.9a1 1 0 0 0 1.41-1.41L13.41 12l4.9-4.89a1 1 0 0 0-.01-1.4z"/></svg>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

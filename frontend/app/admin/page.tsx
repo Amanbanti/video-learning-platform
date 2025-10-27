@@ -681,37 +681,76 @@ export default function AdminPage() {
                     <div className="space-y-4">
                       {Array.isArray(users) && users.length > 0 ? (
                         users.map((user) => (
-                          <div key={user._id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-muted-foreground">User ID: {user._id}</p>
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                            </div>
-
-                            <div className="flex items-center space-x-4">
-                              <Badge
-                                variant={
-                                  user.subscriptionStatus === "Active"
-                                    ? "default"
-                                    : user.subscriptionStatus === "Trial"
-                                    ? "secondary"
-                                    : "outline"
-                                }
+                          <div
+                                key={user._id}
+                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-3"
                               >
-                                {user.subscriptionStatus}
-                              </Badge>
+                                {/* User info */}
+                                <div className="flex flex-col">
+                                  <p className="font-medium">{user.name}</p>
+                                  <p className="text-muted-foreground break-all">
+                                    User ID: {user._id}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground break-all">
+                                    {user.email}
+                                  </p>
 
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="cursor-pointer"
-                                onClick={() => handleOpenDialog(user.subscriptionStatus, user._id)}
-                              >
-                                <Edit className="h-3 w-3 mr-1" />
-                                Edit
-                              </Button>
-                            </div>
-                          </div>
+                                  {/* Mobile-only buttons (visible on small screens) */}
+                                  <div className="flex items-center justify-between mt-3 sm:hidden">
+                                    <Badge
+                                      variant={
+                                        user.subscriptionStatus === "Active"
+                                          ? "default"
+                                          : user.subscriptionStatus === "Trial"
+                                          ? "secondary"
+                                          : "outline"
+                                      }
+                                    >
+                                      {user.subscriptionStatus}
+                                    </Badge>
+
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="cursor-pointer"
+                                      onClick={() =>
+                                        handleOpenDialog(user.subscriptionStatus, user._id)
+                                      }
+                                    >
+                                      <Edit className="h-3 w-3 mr-1" />
+                                      Edit
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                {/* Desktop buttons (hidden on small screens) */}
+                                <div className="hidden sm:flex items-center space-x-4">
+                                  <Badge
+                                    variant={
+                                      user.subscriptionStatus === "Active"
+                                        ? "default"
+                                        : user.subscriptionStatus === "Trial"
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                  >
+                                    {user.subscriptionStatus}
+                                  </Badge>
+
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                      handleOpenDialog(user.subscriptionStatus, user._id)
+                                    }
+                                  >
+                                    <Edit className="h-3 w-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                </div>
+                              </div>
+
                         ))
                       ) : (
                         <p className="text-sm text-muted-foreground text-center">No users found.</p>

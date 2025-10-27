@@ -11,20 +11,23 @@ declare global {
 
 interface YouTubePlayerProps {
   videoUrl: string;
+  fullScreen?: boolean; // when true, wrapper fills container
 }
 
-export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
+export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl, fullScreen = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7); // Start with 70% volume
   const [showVolume, setShowVolume] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fitCover, setFitCover] = useState(false); // false = contain (letterbox), true = cover (zoom fill)
   const playerRef = useRef<any>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout>();
+  const playerIdRef = useRef(`ytp-${Math.random().toString(36).slice(2)}`);
 
   // Extract video ID
   const videoIdMatch = videoUrl.match(
@@ -48,23 +51,16 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
 
   // Initialize YouTube Player
   useEffect(() => {
-    // Load YouTube IFrame API script if not already loaded
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-    }
+    if (!videoId) return;
 
-    // Create player once API is ready
-    window.onYouTubeIframeAPIReady = () => {
-      playerRef.current = new window.YT.Player('youtube-player', {
-        videoId: videoId,
+    const create = () => {
+      if (playerRef.current) return;
+      playerRef.current = new window.YT.Player(playerIdRef.current, {
+        videoId,
         playerVars: {
           autoplay: 1,
-          // REMOVED: mute: 1 - This was muting the audio
           loop: 1,
-          controls: 0, // This hides all YouTube controls
+          controls: 0, // Hide native controls
           rel: 0,
           modestbranding: 1,
           playlist: videoId, // For loop to work
@@ -72,47 +68,38 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
           showinfo: 0,
           iv_load_policy: 3,
           fs: 0,
-          disablekb: 1
+          disablekb: 1,
         },
         events: {
           onReady: onPlayerReady,
-          onStateChange: onPlayerStateChange
-        }
+          onStateChange: onPlayerStateChange,
+        },
       });
     };
 
-    // If API is already loaded, create player immediately
+    // Load API if needed and create player
     if (window.YT && window.YT.Player) {
-      playerRef.current = new window.YT.Player('youtube-player', {
-        videoId: videoId,
-        playerVars: {
-          autoplay: 1,
-          // REMOVED: mute: 1 - This was muting the audio
-          loop: 1,
-          controls: 0, // This hides all YouTube controls
-          rel: 0,
-          modestbranding: 1,
-          playlist: videoId,
-          playsinline: 1,
-          showinfo: 0,
-          iv_load_policy: 3,
-          fs: 0,
-          disablekb: 1
-        },
-        events: {
-          onReady: onPlayerReady,
-          onStateChange: onPlayerStateChange
-        }
-      });
+      create();
+    } else {
+      // Chain existing callback so multiple components can register
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        try { prev && prev(); } catch {}
+        create();
+      };
+      // Inject script only once
+      if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag?.parentNode?.insertBefore(tag, firstScriptTag);
+      }
     }
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      if (playerRef.current) {
-        playerRef.current.destroy();
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      try { playerRef.current?.destroy?.(); } catch {}
+      playerRef.current = null;
     };
   }, [videoId]);
 
@@ -125,7 +112,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
 
   const onPlayerStateChange = (event: any) => {
     const state = event.data;
-    
     switch (state) {
       case window.YT.PlayerState.PLAYING:
         setIsPlaying(true);
@@ -144,21 +130,14 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
   };
 
   const startProgressTimer = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       if (playerRef.current && playerRef.current.getCurrentTime) {
         const time = playerRef.current.getCurrentTime();
         setCurrentTime(time);
-        
-        // Update duration in case it wasn't available initially
         if (duration === 0) {
           const newDuration = playerRef.current.getDuration();
-          if (newDuration > 0) {
-            setDuration(newDuration);
-          }
+          if (newDuration > 0) setDuration(newDuration);
         }
       }
     }, 1000);
@@ -166,21 +145,15 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
 
   const togglePlay = () => {
     if (!playerRef.current) return;
-
-    if (isPlaying) {
-      playerRef.current.pauseVideo();
-    } else {
-      playerRef.current.playVideo();
-    }
+    if (isPlaying) playerRef.current.pauseVideo();
+    else playerRef.current.playVideo();
   };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressRef.current || !playerRef.current) return;
-    
     const rect = progressRef.current.getBoundingClientRect();
     const percent = (e.clientX - rect.left) / rect.width;
     const newTime = percent * duration;
-
     playerRef.current.seekTo(newTime, true);
     setCurrentTime(newTime);
   };
@@ -188,32 +161,22 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
-    
     if (playerRef.current) {
       playerRef.current.setVolume(newVolume * 100);
-      
-      // If volume was 0 and now increasing, unmute the video
       if (newVolume > 0 && playerRef.current.isMuted && playerRef.current.isMuted()) {
         playerRef.current.unMute();
       }
     }
   };
 
-  const toggleVolume = () => {
-    setShowVolume(!showVolume);
-  };
-
   const toggleMute = () => {
     if (!playerRef.current) return;
-    
     if (volume === 0) {
-      // Unmute - set volume to 50%
       const newVolume = 0.5;
       setVolume(newVolume);
       playerRef.current.setVolume(newVolume * 100);
       playerRef.current.unMute();
     } else {
-      // Mute - set volume to 0
       setVolume(0);
       playerRef.current.setVolume(0);
     }
@@ -228,14 +191,11 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
 
   const lockLandscape = async () => {
     postToRN({ type: "ORIENTATION_LOCK", orientation: "LANDSCAPE" });
-    // Web fallback: lock orientation (works in fullscreen-capable browsers)
     try {
       if ((screen as any).orientation?.lock) {
         await (screen as any).orientation.lock("landscape");
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
   const lockPortrait = async () => {
@@ -244,9 +204,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
       if ((screen as any).orientation?.lock) {
         await (screen as any).orientation.lock("portrait");
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
   const unlockOrientation = () => {
@@ -255,42 +213,25 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
       if ((screen as any).orientation?.unlock) {
         (screen as any).orientation.unlock();
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
-
     try {
       if (!isFullscreen) {
-        // Enter fullscreen then lock orientation to landscape
-        if (containerRef.current.requestFullscreen) {
-          await containerRef.current.requestFullscreen();
-        } else if ((containerRef.current as any).webkitRequestFullscreen) {
-          (containerRef.current as any).webkitRequestFullscreen();
-        } else if ((containerRef.current as any).msRequestFullscreen) {
-          (containerRef.current as any).msRequestFullscreen();
-        }
+        if (containerRef.current.requestFullscreen) await containerRef.current.requestFullscreen();
+        else if ((containerRef.current as any).webkitRequestFullscreen) (containerRef.current as any).webkitRequestFullscreen();
+        else if ((containerRef.current as any).msRequestFullscreen) (containerRef.current as any).msRequestFullscreen();
         await lockLandscape();
       } else {
-        // Exit fullscreen then restore portrait
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          (document as any).webkitExitFullscreen();
-        } else if ((document as any).msExitFullscreen) {
-          (document as any).msExitFullscreen();
-        }
-        // Some browsers require locking after exiting
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+        else if ((document as any).msExitFullscreen) (document as any).msExitFullscreen();
         await lockPortrait();
-        // Or if unsupported, at least try to unlock
         unlockOrientation();
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
   // Listen for fullscreen changes and sync orientation too
@@ -301,9 +242,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
       try {
         if (nowFullscreen) await lockLandscape();
         else await lockPortrait();
-      } catch {
-        // ignore
-      }
+      } catch {}
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -319,7 +258,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
 
   const formatTime = (seconds: number) => {
     if (isNaN(seconds)) return "0:00";
-    
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -329,11 +267,19 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  const wrapperClass = fullScreen
+    ? "w-full h-full mx-auto rounded-none overflow-hidden relative"
+    : "w-full max-w-4xl mx-auto aspect-video rounded-lg overflow-hidden relative";
+
   return (
-    <div ref={containerRef} className="w-full max-w-4xl mx-auto aspect-video rounded-lg overflow-hidden relative">
+    <div ref={containerRef} className={wrapperClass}>
       {/* YouTube Player Container - responsive to parent aspect ratio */}
       <div className="absolute inset-0">
-        <div id="youtube-player" className="w-full h-full"></div>
+        {/* when fitCover, overscale to simulate cover; otherwise contain */}
+        <div
+          id={playerIdRef.current}
+          className={fitCover ? "h-full w-[300%] -ml-[100%] pointer-events-none" : "h-full w-full pointer-events-none"}
+        ></div>
       </div>
 
       {/* Custom Controls Overlay */}
@@ -379,6 +325,23 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
             </div>
 
             <div className="flex items-center space-x-3">
+              {/* Fit/Cover Toggle (rectangle icon) */}
+              <button
+                onClick={() => setFitCover((v) => !v)}
+                className="text-white hover:text-gray-300 transition-colors p-1"
+                title={fitCover ? "Fit to screen (contain)" : "Fill screen (cover)"}
+              >
+                {fitCover ? (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="4" y="6" width="16" height="12" rx="2"/>
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="4" y="6" width="16" height="12" rx="2"/>
+                  </svg>
+                )}
+              </button>
+
               {/* Volume Control */}
               <div ref={volumeRef} className="relative">
                 <button 
@@ -400,7 +363,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl }) => {
                   )}
                 </button>
 
-                {/* Volume Slider - Now stays open until clicked outside */}
                 {showVolume && (
                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-800 rounded-lg p-3 shadow-lg z-50">
                     <input

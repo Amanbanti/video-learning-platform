@@ -368,7 +368,7 @@ export const sendOtpController = async (req, res) => {
     })
 
     const mailOptions = {
-      from: `"Lernova Support Team Support Team" <${process.env.EMAIL_USER}>`,
+      from: `"A++ Support Team Support Team" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your Password Reset Verification Code",
       html: `
@@ -583,7 +583,7 @@ export const updateUserPymentSubscription = async (req, res) => {
       });
 
       const mailOptions = {
-        from: `"Lernova Support Team" <${process.env.EMAIL_USER}>`,
+        from: `"A++ Support Team" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: "Payment Receipt Update",
         html: `

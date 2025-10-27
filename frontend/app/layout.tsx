@@ -9,7 +9,7 @@ import Footer from "../components/Footer";
 import ClientThemeSync from "../components/ClientThemeSync";
 
 export const metadata: Metadata = {
-  title: "Lernova",
+  title: "A++",
   description: "Premium video courses for Natural and Social sciences",
   icons: {
     icon: "/favicon.svg",
