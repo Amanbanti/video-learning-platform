@@ -25,9 +25,9 @@ export default function Footer() {
           {/* Social Links */}
           <div>
             <h2 className="text-lg font-semibold mb-3">Contact Us</h2>
-            <span className="text-sm text-muted-foreground"> Phone :  0941670553 </span>
-            <span className="text-sm text-muted-foreground"> Email:  amanuelasfaw68@gmail.com</span>
-            <span className="text-sm text-muted-foreground"> Telegram:  @amanigrt</span>
+            <div className="text-sm text-muted-foreground"> Phone :  0941670553 </div>
+            <div className="text-sm text-muted-foreground"> Email:  amanuelasfaw68@gmail.com</div>
+            <div className="text-sm text-muted-foreground"> Telegram:  @amanigrt</div>
           </div>
         </div>
 
