@@ -1,43 +1,94 @@
-/* Define CSS variables and theme tokens before Tailwind imports so utilities like border-border resolve */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  /* Light theme color tokens (CSS vars for optional external use) */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.25 0 0);
-  --card: oklch(0.98 0.02 120);
-  --card-foreground: oklch(0.25 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0 0);
-  --primary: oklch(0.45 0.15 142);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.7 0.2 120);
-  --secondary-foreground: oklch(0.25 0 0);
-  --muted: oklch(0.98 0.02 120);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.7 0.2 120);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0 0);
-  --input: oklch(0.98 0.02 120);
-  --ring: oklch(0.45 0.15 142);
-  --chart-1: oklch(0.45 0.15 142);
-  --chart-2: oklch(0.7 0.2 120);
-  --chart-3: oklch(0.6 0.2 25);
-  --chart-4: oklch(0.65 0.2 60);
-  --chart-5: oklch(0.55 0.15 200);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.98 0.02 120);
-  --sidebar-foreground: oklch(0.25 0 0);
-  --sidebar-primary: oklch(0.45 0.15 142);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.7 0.2 120);
-  --sidebar-accent-foreground: oklch(0.25 0 0);
-  --sidebar-border: oklch(0.9 0 0);
-  --sidebar-ring: oklch(0.45 0.15 142);
+  /* Light Mode - Premium Elegant Theme */
+  --background: oklch(0.98 0.005 85); /* Warm cream */
+  --foreground: oklch(0.15 0.01 85);
+  --card: oklch(0.96 0.008 85);
+  --card-foreground: oklch(0.18 0.01 85);
+  --popover: oklch(0.96 0.008 85);
+  --popover-foreground: oklch(0.18 0.01 85);
+  --primary: oklch(0.35 0.08 150); /* Deep forest green */
+  --primary-foreground: oklch(0.98 0.005 85);
+  --secondary: oklch(0.88 0.01 85); /* Warm beige */
+  --secondary-foreground: oklch(0.15 0.01 85);
+  --muted: oklch(0.92 0.008 85);
+  --muted-foreground: oklch(0.45 0.01 85);
+  --accent: oklch(0.35 0.08 150);
+  --accent-foreground: oklch(0.98 0.005 85);
+  --destructive: oklch(0.65 0.25 25);
+  --destructive-foreground: oklch(0.98 0.005 85);
+  --border: oklch(0.88 0.01 85);
+  --input: oklch(0.94 0.008 85);
+  --ring: oklch(0.35 0.08 150);
+  --chart-1: oklch(0.35 0.08 150);
+  --chart-2: oklch(0.45 0.12 120);
+  --chart-3: oklch(0.55 0.15 90);
+  --chart-4: oklch(0.65 0.18 60);
+  --chart-5: oklch(0.75 0.15 30);
+  --radius: 1rem;
+  --sidebar: oklch(0.96 0.008 85);
+  --sidebar-foreground: oklch(0.18 0.01 85);
+  --sidebar-primary: oklch(0.35 0.08 150);
+  --sidebar-primary-foreground: oklch(0.98 0.005 85);
+  --sidebar-accent: oklch(0.92 0.008 85);
+  --sidebar-accent-foreground: oklch(0.18 0.01 85);
+  --sidebar-border: oklch(0.88 0.01 85);
+  --sidebar-ring: oklch(0.35 0.08 150);
+
+  /* Premium VIP colors for light mode */
+  --vip-gold: oklch(0.65 0.15 85);
+  --vip-green: oklch(0.35 0.08 150);
+  --vip-cream: oklch(0.98 0.005 85);
+  --vip-warm: oklch(0.88 0.01 85);
 }
 
-/* Map CSS variables to Tailwind v4 theme tokens */
-@theme {
+.dark {
+  /* Dark Mode - Premium Elegant Theme */
+  --background: oklch(0.08 0.01 240);
+  --foreground: oklch(0.98 0.005 85);
+  --card: oklch(0.12 0.02 240);
+  --card-foreground: oklch(0.95 0.005 85);
+  --popover: oklch(0.12 0.02 240);
+  --popover-foreground: oklch(0.95 0.005 85);
+  --primary: oklch(0.55 0.12 150); /* Bright green */
+  --primary-foreground: oklch(0.08 0.01 240);
+  --secondary: oklch(0.18 0.02 240);
+  --secondary-foreground: oklch(0.95 0.005 85);
+  --muted: oklch(0.18 0.02 240);
+  --muted-foreground: oklch(0.65 0.01 85);
+  --accent: oklch(0.75 0.15 85); /* Gold accent */
+  --accent-foreground: oklch(0.08 0.01 240);
+  --destructive: oklch(0.65 0.25 25);
+  --destructive-foreground: oklch(0.98 0.005 85);
+  --border: oklch(0.22 0.02 240);
+  --input: oklch(0.18 0.02 240);
+  --ring: oklch(0.75 0.15 85);
+  --chart-1: oklch(0.75 0.15 85);
+  --chart-2: oklch(0.65 0.12 150);
+  --chart-3: oklch(0.55 0.18 200);
+  --chart-4: oklch(0.7 0.2 300);
+  --chart-5: oklch(0.6 0.15 30);
+  --sidebar: oklch(0.1 0.01 240);
+  --sidebar-foreground: oklch(0.95 0.005 85);
+  --sidebar-primary: oklch(0.75 0.15 85);
+  --sidebar-primary-foreground: oklch(0.08 0.01 240);
+  --sidebar-accent: oklch(0.18 0.02 240);
+  --sidebar-accent-foreground: oklch(0.95 0.005 85);
+  --sidebar-border: oklch(0.22 0.02 240);
+  --sidebar-ring: oklch(0.75 0.15 85);
+
+  /* Premium VIP colors for dark mode */
+  --vip-gold: oklch(0.75 0.15 85);
+  --vip-green: oklch(0.55 0.12 150);
+  --vip-cream: oklch(0.95 0.005 85);
+  --vip-warm: oklch(0.25 0.02 240);
+}
+
+@theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-background: var(--background);
@@ -76,54 +127,255 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Premium VIP utilities */
+  --color-vip-gold: var(--vip-gold);
+  --color-vip-green: var(--vip-green);
+  --color-vip-cream: var(--vip-cream);
+  --color-vip-warm: var(--vip-warm);
 }
-
-/* Enable dark variant via class strategy */
-@variant dark { &:is(.dark *) };
-
-/* Dark theme token overrides (class strategy) */
-@theme .dark {
-  --color-background: oklch(0.1 0 0);
-  --color-foreground: oklch(0.95 0 0);
-  --color-card: oklch(0.15 0 0);
-  --color-card-foreground: oklch(0.95 0 0);
-  --color-popover: oklch(0.1 0 0);
-  --color-popover-foreground: oklch(0.95 0 0);
-  --color-primary: oklch(0.6 0.2 142);
-  --color-primary-foreground: oklch(0.1 0 0);
-  --color-secondary: oklch(0.2 0 0);
-  --color-secondary-foreground: oklch(0.95 0 0);
-  --color-muted: oklch(0.2 0 0);
-  --color-muted-foreground: oklch(0.7 0 0);
-  --color-accent: oklch(0.7 0.2 120);
-  --color-accent-foreground: oklch(0.1 0 0);
-  --color-destructive: oklch(0.5 0.2 25);
-  --color-destructive-foreground: oklch(0.95 0 0);
-  --color-border: oklch(0.2 0 0);
-  --color-input: oklch(0.2 0 0);
-  --color-ring: oklch(0.6 0.2 142);
-  --color-chart-1: oklch(0.6 0.2 142);
-  --color-chart-2: oklch(0.7 0.2 120);
-  --color-chart-3: oklch(0.6 0.2 25);
-  --color-chart-4: oklch(0.65 0.2 60);
-  --color-chart-5: oklch(0.55 0.15 200);
-  --color-sidebar: oklch(0.15 0 0);
-  --color-sidebar-foreground: oklch(0.95 0 0);
-  --color-sidebar-primary: oklch(0.6 0.2 142);
-  --color-sidebar-primary-foreground: oklch(0.1 0 0);
-  --color-sidebar-accent: oklch(0.2 0 0);
-  --color-sidebar-accent-foreground: oklch(0.95 0 0);
-  --color-sidebar-border: oklch(0.2 0 0);
-  --color-sidebar-ring: oklch(0.6 0.2 142);
-}
-
-/* Now load Tailwind so utilities resolve with tokens defined above */
-@import "tailwindcss";
-
-/* Optional: animations after Tailwind */
-@import "tw-animate-css";
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
-  body { @apply bg-background text-foreground font-sans; }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Premium background patterns */
+  .premium-bg {
+    background-image: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  }
+
+  .light .premium-bg {
+    background-image: radial-gradient(circle at 25% 25%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.01) 0%, transparent 50%);
+  }
+
+  /* Elegant glass effects */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .light .glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Premium gradients */
+  .vip-gradient {
+    background: linear-gradient(135deg, var(--vip-gold), var(--vip-green));
+  }
+
+  .elegant-gradient {
+    background: linear-gradient(135deg, oklch(0.98 0.005 85) 0%, oklch(0.96 0.008 85) 50%, oklch(0.94 0.01 85) 100%);
+  }
+
+  .dark .elegant-gradient {
+    background: linear-gradient(135deg, oklch(0.08 0.01 240) 0%, oklch(0.12 0.02 240) 50%, oklch(0.16 0.03 240) 100%);
+  }
+
+  /* Colorful celebration gradients and animations */
+  .celebration-gradient {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+    background-size: 300% 300%;
+    animation: gradientShift 3s ease infinite;
+  }
+
+  .rainbow-border {
+    border: 2px solid;
+    border-image: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57) 1;
+    animation: borderShift 2s ease infinite;
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  .bounce-in {
+    animation: bounceIn 0.6s ease-out;
+  }
+
+  .slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+  }
+
+  @keyframes gradientShift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes borderShift {
+    0%,
+    100% {
+      filter: hue-rotate(0deg);
+    }
+    50% {
+      filter: hue-rotate(180deg);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(255, 107, 107, 0.6);
+      transform: scale(1.02);
+    }
+  }
+
+  @keyframes bounceIn {
+    0% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInRight {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Typography enhancements */
+  .elegant-heading {
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .premium-text {
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 1.6;
+  }
+
+  /* Hero background with overlay */
+  .hero-bg {
+    background-image: url("/placeholder.svg?height=800&width=1200");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  .hero-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.6) 100%);
+  }
+
+  .light .hero-bg::before {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0.7) 50%,
+      rgba(255, 255, 255, 0.8) 100%
+    );
+  }
+
+  /* Dashboard background */
+  .dashboard-bg {
+    background-image: url("/placeholder.svg?height=600&width=1200");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    opacity: 0.05;
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .light .dashboard-bg {
+    opacity: 0.03;
+  }
+
+  /* Admin background */
+  .admin-bg {
+    background-image: url("/placeholder.svg?height=600&width=1200");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    opacity: 0.08;
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .light .admin-bg {
+    opacity: 0.04;
+  }
+
+  /* Enhanced animations */
+  .fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.8s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Demo banner styling */
+  .demo-banner {
+    background: linear-gradient(90deg, var(--vip-green), var(--vip-gold));
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 }
