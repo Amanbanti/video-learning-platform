@@ -54,6 +54,14 @@ export function getCurrentUser(): User | null {
   if (typeof window === "undefined") return null;
 
   const userData = localStorage.getItem("currentUser");
+
+  // New: ensure the auth cookie exists; if missing, clear stale local session
+  const hasJwtCookie = typeof document !== 'undefined' && document.cookie.split('; ').some((c) => c.startsWith('jwt='));
+  if (!hasJwtCookie) {
+    if (userData) localStorage.removeItem("currentUser");
+    return null;
+  }
+
   if (!userData) return null;
 
   try {
