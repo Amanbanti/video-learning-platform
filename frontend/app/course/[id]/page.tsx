@@ -11,7 +11,7 @@ import Header from "../../../components/Header"
 import { toast } from "react-hot-toast"
 import { getCurrentUser, updateTrialVideosWatched } from "../../../lib/auth"
 import { fetchCourseById, type Course } from "../../../lib/course"
-import { YouTubePlayer } from "../../../components/YouTubeVideoPlayer"
+// Removed incorrect and unused import of YouTubePlayer
 
 export default function CoursePage() {
   const [user, setUser] = useState<any>(getCurrentUser())
