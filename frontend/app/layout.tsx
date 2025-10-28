@@ -6,7 +6,6 @@ import { Suspense } from "react";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import Footer from "../components/Footer";
-import ClientThemeSync from "../components/ClientThemeSync";
 
 export const metadata: Metadata = {
   title: "A++",
@@ -27,13 +26,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans">
         <Suspense fallback={null}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-            <ClientThemeSync />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+            themes={["light", "dark"]}
+          >
+            {/* next-themes will add/remove the `dark` class on <html>. No manual sync needed. */}
             {children}
             <Footer />
           </ThemeProvider>
