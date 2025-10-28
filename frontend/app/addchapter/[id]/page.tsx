@@ -20,7 +20,7 @@ import { LoaderCircle } from "lucide-react"
 
 import { toast } from "react-hot-toast"
 import { fetchCourseById, createChapter} from "../../../lib/course"
-import YouTubePlayer from "../../../components/YouTubeVideoPlayer"
+import { YouTubePlayer } from "../../../components/YouTubeVideoPlayer"
 
 
 export default function CoursePage() {
