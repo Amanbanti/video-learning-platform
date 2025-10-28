@@ -79,7 +79,7 @@
 }
 
 /* Enable dark variant via class strategy */
-@custom-variant dark (&:is(.dark *));
+@variant dark { &:is(.dark *) };
 
 /* Dark theme token overrides (class strategy) */
 @theme .dark {
