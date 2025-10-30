@@ -1,25 +1,28 @@
 import nodemailer from "nodemailer";
-import { Resend } from "resend";
 
 export async function sendEmail({ to, subject, text, html, from }) {
   // Prefer Resend HTTP API in production
   if (process.env.RESEND_API_KEY) {
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      const resp = await resend.emails.send({
-        from: from || process.env.EMAIL_FROM || `No Reply <no-reply@${process.env.SENDER_DOMAIN || 'example.com'}>`,
-        to: [to],
-        subject,
-        text,
-        html: html || (text ? `<p>${text}</p>` : undefined),
-      });
-      if (resp?.error) throw new Error(resp.error.message || 'Resend API error');
-      return { ok: true, provider: 'resend', id: resp?.data?.id };
+      const mod = await import('resend').catch(() => ({}));
+      const Resend = mod?.Resend;
+      if (Resend) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const resp = await resend.emails.send({
+          from: from || process.env.EMAIL_FROM || `No Reply <no-reply@${process.env.SENDER_DOMAIN || 'example.com'}>`,
+          to: [to],
+          subject,
+          text,
+          html: html || (text ? `<p>${text}</p>` : undefined),
+        });
+        if (resp?.error) throw new Error(resp.error.message || 'Resend API error');
+        return { ok: true, provider: 'resend', id: resp?.data?.id };
+      } else {
+        console.warn('Resend SDK not installed. Falling back to SMTP.');
+      }
     } catch (e) {
       console.error('Resend email error:', e);
     }
-  } else {
-    console.warn('RESEND_API_KEY not set. Falling back to SMTP if configured.');
   }
 
   // Fallback to SMTP via Nodemailer (may fail on some platforms)
