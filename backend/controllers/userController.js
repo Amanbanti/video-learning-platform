@@ -3,10 +3,26 @@ import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
-
-
+// Create a reusable SMTP transporter from env (Gmail)
+const createTransporter = () => {
+  const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const port = Number(process.env.EMAIL_PORT || 465);
+  const secure = String(process.env.EMAIL_SECURE || (port === 465)).toLowerCase() === 'true';
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  });
+};
 
 // @desc    Register user and send OTP
 // @route   POST /api/users/register
@@ -45,22 +61,16 @@ export const registerUser = async (req, res) => {
       return res.status(500).json({ message: "User creation failed" });
     }
 
+    // Set auth cookie
     generateToken(req, res, user);
 
-    // Configure transporter
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // App Password recommended
-      },
-    });
+    // Use standardized transporter (Gmail SMTP)
+    const transporter = createTransporter();
 
-    // Wrap sendMail in a Promise to wait for email sending
     await new Promise((resolve, reject) => {
       transporter.sendMail(
         {
-          from: process.env.EMAIL_USER,
+          from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
           to: email,
           subject: "Your Verification Code",
           text: `Your verification code is: ${otp}. It expires in 60 minutes.`,
@@ -70,7 +80,7 @@ export const registerUser = async (req, res) => {
             console.error("Email sending error:", err);
             reject(err);
           } else {
-            console.log("Email sent:", info.response);
+            console.log("Email sent:", info?.messageId || info?.response);
             resolve(info);
           }
         }
@@ -83,8 +93,6 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
 
 // @desc    Verify OTP and complete registration
 // @route   POST /api/users/verify-otp
@@ -118,15 +126,12 @@ export const verifyOtp = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({ message: "User verified successfully",user });
+    res.status(200).json({ message: "User verified successfully", user });
   } catch (err) {
     console.error("OTP verify error:", err);
     res.status(500).json({ message: err.message });
   }
 };
-
-
-
 
 // @desc    Login user
 // @route   POST /api/users/login
@@ -151,18 +156,13 @@ export const loginUser = async (req, res) => {
   }
 };
 
-
-
 export const logoutUser = (req, res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0), // Expire the cookie immediately
   });
   res.json({ message: 'Logged out successfully' });
-}
-
-
-
+};
 
 // @desc    Upload payment receipt
 // @route   PUT /api/users/:id/receipt
@@ -228,42 +228,37 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-
-
-
-
 export const updateUserSubscription = async (req, res) => {
-  const { userId } = req.params
-  const { status } = req.body
+  const { userId } = req.params;
+  const { status } = req.body;
 
   if (!["Trial", "Active"].includes(status)) {
-    return res.status(400).json({ message: "Invalid subscription status" })
+    return res.status(400).json({ message: "Invalid subscription status" });
   }
 
   try {
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      return res.status(404).json({ message: "User not found" });
     }
 
-    user.subscriptionStatus = status
-    await user.save()
+    user.subscriptionStatus = status;
+    await user.save();
 
     // Return updated user (excluding sensitive fields)
-    const { password, verificationCode, verificationCodeExpires, ...userData } = user.toObject()
-    res.json(userData)
+    const { password, verificationCode, verificationCodeExpires, ...userData } = user.toObject();
+    res.json(userData);
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ message: "Server error" })
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
-}
-
+};
 
 // PATCH /users/trial-video
-export const updateTrialVideosWatched =  async (req, res) => {
+export const updateTrialVideosWatched = async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     if (!userId) return res.status(400).json({ message: "userId is required" });
 
     const user = await User.findById(userId);
@@ -272,13 +267,13 @@ export const updateTrialVideosWatched =  async (req, res) => {
     if (user.subscriptionStatus === "Active") {
       return res.json(user); // Premium users can watch unlimited
     }
-    
+
     if (user.subscriptionStatus === "Pending") {
       if ((user.trialVideosWatched || 0) >= 3) {
         return res.status(403).json({ message: "Your subscription is pending. Wait admin to approve!" });
       }
     }
-    
+
     if (user.subscriptionStatus === "Trial") {
       if ((user.trialVideosWatched || 0) >= 3) {
         return res.status(403).json({ message: "Trial limit reached. Upgrade to Premium to continue watching." });
@@ -295,59 +290,50 @@ export const updateTrialVideosWatched =  async (req, res) => {
   }
 };
 
-
-
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id); 
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: err.message });
-  } 
+  }
 };
-
-
-
 
 // ✅ Upload payment receipt & update user info
 export const uploadPaymentReceipt = async (req, res) => {
-  const { paymentMethod, paymentAmount, payerPhoneNumber } = req.body
-  const userId = req.params.id
+  const { paymentMethod, paymentAmount, payerPhoneNumber } = req.body;
+  const userId = req.params.id;
 
   // ✅ Find user
-  const user = await User.findById(userId)
+  const user = await User.findById(userId);
   if (!user) {
-    res.status(404)
-    throw new Error("User not found")
+    res.status(404);
+    throw new Error("User not found");
   }
 
   // ✅ Get uploaded image path
-  const receiptPath = req.file ? req.file.path.replace(/\\/g, "/") : null
+  const receiptPath = req.file ? req.file.path.replace(/\\/g, "/") : null;
   if (!receiptPath) {
-    res.status(400)
-    throw new Error("Payment receipt image is required")
+    res.status(400);
+    throw new Error("Payment receipt image is required");
   }
 
   // ✅ Update payment info
-  user.paymentReceipt = receiptPath
-  user.paymentMethod = paymentMethod
-  user.paymentAmount = paymentAmount
-  user.payerPhoneNumber = payerPhoneNumber
-  user.paymentDate = new Date()
-  user.subscriptionStatus = "Pending"
+  user.paymentReceipt = receiptPath;
+  user.paymentMethod = paymentMethod;
+  user.paymentAmount = paymentAmount;
+  user.payerPhoneNumber = payerPhoneNumber;
+  user.paymentDate = new Date();
+  user.subscriptionStatus = "Pending";
 
-  await user.save()
+  await user.save();
 
   res.status(200).json({
     message: "Payment receipt uploaded successfully",
     user,
-  })
-}
-
-
-
-
+  });
+};
 
 // Generate a random 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -367,17 +353,11 @@ export const sendOtpController = async (req, res) => {
     user.verificationCodeExpires = Date.now() + 5 * 60 * 1000;
     await user.save();
 
-    // Configure transporter
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // App Password recommended
-      },
-    });
+    // Use standardized transporter (Gmail SMTP)
+    const transporter = createTransporter();
 
     const mailOptions = {
-      from: `"A++ Support Team" <${process.env.EMAIL_USER}>`,
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: email,
       subject: "Your Password Reset Verification Code",
       html: `
@@ -399,7 +379,7 @@ export const sendOtpController = async (req, res) => {
           console.error("Email sending error:", err);
           reject(err);
         } else {
-          console.log("Email sent:", info.response);
+          console.log("Email sent:", info?.messageId || info?.response);
           resolve(info);
         }
       });
@@ -412,97 +392,84 @@ export const sendOtpController = async (req, res) => {
   }
 };
 
-
-
-
-
-
 // ✅ VERIFY OTP CONTROLLER
 export const verifyOtpController = async (req, res) => {
   try {
-    const { email, otp } = req.body
-    if (!email || !otp) return res.status(400).json({ message: "Email and OTP are required" })
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: "Email and OTP are required" });
 
-    const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ message: "User not found" })
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     if (
       !user.verificationCode ||
       user.verificationCode !== otp ||
       user.verificationCodeExpires < Date.now()
     ) {
-      return res.status(400).json({ message: "Invalid or expired verification code" })
+      return res.status(400).json({ message: "Invalid or expired verification code" });
     }
 
     // Clear OTP fields
-    user.verificationCode = undefined
-    user.verificationCodeExpires = undefined
-    await user.save()
+    user.verificationCode = undefined;
+    user.verificationCodeExpires = undefined;
+    await user.save();
 
-    res.status(200).json({ message: "OTP verified successfully"})
+    res.status(200).json({ message: "OTP verified successfully" });
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "OTP verification failed" })
+    console.error(error);
+    res.status(500).json({ message: "OTP verification failed" });
   }
-}
-
-
-
-
+};
 
 export const resetPassword = async (req, res) => {
   try {
-    const { email, newPassword } = req.body
+    const { email, newPassword } = req.body;
 
     // Validate input
     if (!email || !newPassword) {
-      return res.status(400).json({ message: "Email and new password are required." })
+      return res.status(400).json({ message: "Email and new password are required." });
     }
 
     // Find user
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found." })
+      return res.status(404).json({ message: "User not found." });
     }
 
-
     // Hash new password
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(newPassword, salt)
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     // Update password and clear verification fields
-    user.password = hashedPassword
+    user.password = hashedPassword;
 
-    await user.save()
+    await user.save();
 
-    return res.status(200).json({ message: "Password updated successfully." })
+    return res.status(200).json({ message: "Password updated successfully." });
   } catch (error) {
-    console.error("Reset password error:", error)
-    res.status(500).json({ message: "Server error while resetting password." })
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: "Server error while resetting password." });
   }
-}
-
-
-
+};
 
 export const updateUserProfile = async (req, res) => {
   try {
-    const userId = req.params.userId
-    const { name } = req.body
+    const userId = req.params.userId;
+    const { name } = req.body;
 
     if (!name) {
-      return res.status(400).json({ message: "Name is required" })
+      return res.status(400).json({ message: "Name is required" });
     }
 
     // Find user by ID
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Update the name
-    user.name = name
-    await user.save()
+    user.name = name;
+    await user.save();
 
     res.status(200).json({
       message: "Profile updated successfully",
@@ -514,23 +481,19 @@ export const updateUserProfile = async (req, res) => {
         isVerified: user.isVerified,
         // add any other fields you want to return
       },
-    })
+    });
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Failed to update profile" })
+    console.error(error);
+    res.status(500).json({ message: "Failed to update profile" });
   }
-}
-
-
-
-
+};
 
 // @desc    Change password for logged-in user
 // @route   PUT /api/users/update-password
 // @access  Private
 export const updatePasswordController = async (req, res) => {
   try {
-    const userId = req.params.userId
+    const userId = req.params.userId;
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
@@ -558,23 +521,16 @@ export const updatePasswordController = async (req, res) => {
   }
 };
 
-
-
 export const fetchPendingUsers = async (req, res) => {
   try {
-    const pendingUsers = await User.find({ subscriptionStatus: "Pending" }).select( 
+    const pendingUsers = await User.find({ subscriptionStatus: "Pending" }).select(
       "-password -verificationCode -verificationCodeExpires"
     );
     res.json(pendingUsers);
-  }
-  catch (err) {
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
-
-
-
 
 export const updateUserPaymentSubscription = async (req, res) => {
   try {
@@ -599,16 +555,10 @@ export const updateUserPaymentSubscription = async (req, res) => {
 
     // Send email if user is moved to "Trial"
     if (subscriptionStatus === "Trial") {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS, // App Password recommended
-        },
-      });
+      const transporter = createTransporter();
 
       const mailOptions = {
-        from: `"A++ Support Team" <${process.env.EMAIL_USER}>`,
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
         to: user.email,
         subject: "Payment Receipt Update",
         html: `
@@ -626,14 +576,13 @@ export const updateUserPaymentSubscription = async (req, res) => {
         `,
       };
 
-      // Wrap sendMail in a Promise to ensure email is sent before response
       await new Promise((resolve, reject) => {
         transporter.sendMail(mailOptions, (err, info) => {
           if (err) {
             console.error("Email sending error:", err);
             reject(err);
           } else {
-            console.log("Email sent:", info.response);
+            console.log("Email sent:", info?.messageId || info?.response);
             resolve(info);
           }
         });
@@ -649,9 +598,6 @@ export const updateUserPaymentSubscription = async (req, res) => {
     res.status(500).json({ message: "Server error while updating subscription." });
   }
 };
-
-
-
 
 export const getUserPaymentStats = async (req, res) => {
   try {
