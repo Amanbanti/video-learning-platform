@@ -379,3 +379,43 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 }
+
+
+
+
+/* --- Vidstack Layout Styling --- */
+.media-player[data-view-type="video"] {
+  aspect-ratio: 16 / 9;
+}
+
+.vds-video-layout {
+  --video-brand: hsl(0, 0%, 96%);
+}
+
+/* Hide YouTube overlay watermark completely */
+.vds-video-layout iframe[src*="youtube"] {
+  pointer-events: none !important;
+}
+
+/* Hide YouTube logo/watermark overlay (applies to YouTube embeds) */
+.ytp-chrome-top,
+.ytp-watermark,
+.ytp-button.ytp-share-button,
+.ytp-impression-link,
+.ytp-pause-overlay,
+.ytp-chrome-top-buttons {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Ensure controls appear properly */
+.vds-video-layout .vds-controls {
+  opacity: 1 !important;
+}
+
+/* Optional: Make layout colors match your theme */
+.vds-video-layout {
+  --video-brand: hsl(198, 100%, 50%);
+  --plyr-color-main: hsl(198, 100%, 50%);
+}

@@ -11,7 +11,7 @@ import Header from "../../../components/Header"
 import { toast } from "react-hot-toast"
 import { getCurrentUser, updateTrialVideosWatched } from "../../../lib/auth"
 import { fetchCourseById, type Course } from "../../../lib/course"
-// Removed incorrect and unused import of YouTubePlayer
+import VidstackYouTubePlayer from "../../../components/VidstackYouTubePlayer"
 
 export default function CoursePage() {
   const [user, setUser] = useState<any>(getCurrentUser())
@@ -74,9 +74,8 @@ export default function CoursePage() {
         }
       }
 
+      // Toggle inline player for this chapter instead of navigating away
       setActiveChapter(prev => (prev === chapterId ? null : chapterId))
-      // Navigate to the watch page
-      router.push(`/watch/${courseId}/${chapterId}`)
     } catch (err: any) {
       if (err.response?.status === 403) {
         toast.error(err.response.data.message || "Trial limit reached.")
@@ -211,13 +210,24 @@ export default function CoursePage() {
                               Description: {chapter.description}
                             </div>
 
-                            <Button
-                              onClick={() => handleChapterSelect(chapter._id)}
-                              className="w-full sm:w-auto cursor-pointer"
-                            >
-                              <Play className="h-4 w-4 mr-2" />
-                              Watch Chapter
-                            </Button>
+                            {activeChapter === chapter._id ? (
+                              <div className="aspect-video w-full rounded-lg overflow-hidden">
+                                <VidstackYouTubePlayer
+                                  src={chapter.videoUrl}
+                                  title={chapter.title}
+                                  className="w-full h-full"
+                                  customUI
+                                />
+                              </div>
+                            ) : (
+                              <Button
+                                onClick={() => handleChapterSelect(chapter._id)}
+                                className="w-full sm:w-auto cursor-pointer"
+                              >
+                                <Play className="h-4 w-4 mr-2" />
+                                Watch Chapter
+                              </Button>
+                            )}
                           </div>
                         </AccordionContent>
                       </AccordionItem>

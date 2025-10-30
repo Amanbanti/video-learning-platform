@@ -4,6 +4,11 @@ import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "../components/theme-provider";
 import { Suspense } from "react";
 import "./globals.css";
+// Vidstack player styles
+import "@vidstack/react/player/styles/base.css";
+import "@vidstack/react/player/styles/default/theme.css";
+import "@vidstack/react/player/styles/default/layouts/audio.css";
+import "@vidstack/react/player/styles/default/layouts/video.css";
 import { Toaster } from "react-hot-toast";
 import Footer from "../components/Footer";
 import ClientThemeSync from "../components/ClientThemeSync";

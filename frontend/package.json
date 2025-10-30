@@ -40,7 +40,9 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@tailwindcss/postcss": "^4.1.16",
+    "@types/node": "^22.18.8",
     "@vercel/analytics": "latest",
+    "@vidstack/react": "^1.10.6",
     "autoprefixer": "^10.4.21",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
@@ -51,6 +53,7 @@
     "geist": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.544.0",
+    "media-icons": "^1.1.2",
     "next": "14.2.16",
     "next-themes": "latest",
     "plyr": "^3.8.3",
@@ -73,8 +76,7 @@
     "typescript": "^5",
     "vaul": "^0.9.9",
     "video-react": "^0.16.0",
-    "zod": "3.25.67",
-    "@types/node": "^22.18.8"
+    "zod": "3.25.67"
   },
   "devDependencies": {
     "@types/react": "^18.3.25",
