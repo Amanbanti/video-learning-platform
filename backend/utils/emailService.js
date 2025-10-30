@@ -1,15 +1,18 @@
 import nodemailer from "nodemailer";
 
 export async function sendEmail({ to, subject, text, html, from }) {
+  const sender = from || process.env.EMAIL_FROM || `No Reply <no-reply@${process.env.SENDER_DOMAIN || 'example.com'}`;
+
   // Prefer Resend HTTP API in production
   if (process.env.RESEND_API_KEY) {
     try {
+      // Try SDK first
       const mod = await import('resend').catch(() => ({}));
       const Resend = mod?.Resend;
       if (Resend) {
         const resend = new Resend(process.env.RESEND_API_KEY);
         const resp = await resend.emails.send({
-          from: from || process.env.EMAIL_FROM || `No Reply <no-reply@${process.env.SENDER_DOMAIN || 'example.com'}>`,
+          from: sender,
           to: [to],
           subject,
           text,
@@ -17,9 +20,26 @@ export async function sendEmail({ to, subject, text, html, from }) {
         });
         if (resp?.error) throw new Error(resp.error.message || 'Resend API error');
         return { ok: true, provider: 'resend', id: resp?.data?.id };
-      } else {
-        console.warn('Resend SDK not installed. Falling back to SMTP.');
       }
+
+      // SDK not installed: use raw HTTP
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: sender,
+          to: [to],
+          subject,
+          text,
+          html: html || (text ? `<p>${text}</p>` : undefined),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error?.message || `Resend HTTP error: ${res.status}`);
+      return { ok: true, provider: 'resend-http', id: data?.id };
     } catch (e) {
       console.error('Resend email error:', e);
     }
@@ -41,7 +61,7 @@ export async function sendEmail({ to, subject, text, html, from }) {
       });
 
       await transporter.sendMail({
-        from: from || process.env.EMAIL_FROM || process.env.EMAIL_USER,
+        from: sender,
         to,
         subject,
         text,
