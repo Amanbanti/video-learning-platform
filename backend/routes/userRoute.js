@@ -16,7 +16,7 @@ import {
     updateUserProfile,
     updatePasswordController,
     fetchPendingUsers,
-    updateUserPymentSubscription,
+    updateUserPaymentSubscription,
     getUserPaymentStats
  } from "../controllers/userController.js";
 
@@ -47,6 +47,6 @@ router.patch("/:userId/trial-video",authMiddleware, updateTrialVideosWatched);
 router.put("/:id/payment-receipt",authMiddleware, upload.single("paymentReceipt"), uploadPaymentReceipt)
 router.put("/:userId/profile",authMiddleware, updateUserProfile);
 router.put("/:userId/password",authMiddleware, updatePasswordController);
-router.put("/:userId/payment-subscription",authMiddleware,adminMiddleware, updateUserPymentSubscription);
+router.put("/:userId/payment-subscription",authMiddleware,adminMiddleware, updateUserPaymentSubscription);
 
 export default router;
