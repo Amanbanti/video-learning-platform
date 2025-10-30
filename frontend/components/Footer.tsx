@@ -2,7 +2,6 @@
 
 import { Separator } from "../components/ui/separator"
 
-
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
@@ -24,10 +23,9 @@ export default function Footer() {
           {/* Social Links */}
           <div>
             <h2 className="text-lg font-semibold mb-3">Contact Us</h2>
-            <div className="flex gap-4">
-              <span className="text-sm text-muted-foreground"> Phone : 0941670553 </span>
-              <span className="text-sm text-muted-foreground"> Email:  amanuelasfaw68@gmail.com</span>
-            </div>
+            <div className="text-sm text-muted-foreground"> Phone :  0941670553 </div>
+            <div className="text-sm text-muted-foreground"> Email:  amanuelasfaw68@gmail.com</div>
+            <div className="text-sm text-muted-foreground"> Telegram:  @amanigrt</div>
           </div>
         </div>
 
@@ -36,7 +34,9 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
           <p>© {currentYear} A++. All rights reserved.</p>
-         
+          <div className="flex gap-4 mt-3 md:mt-0">
+    
+          </div>
         </div>
       </div>
     </footer>

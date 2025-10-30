@@ -563,7 +563,7 @@ export default function AdminPage() {
                 ) : (
                   courses.map((course) => {
                     const imageUrl = course.coverImageUrl?.split("\\").join("/");
-  
+
                         return (
                           <Card key={course._id}>
                             <CardHeader className="pb-4">
@@ -607,7 +607,7 @@ export default function AdminPage() {
                                     </Button>
                                   </DialogTrigger>
 
-                                  <DialogContent className="sm:max-w-lg bg-white text-black shadow-xl rounded-lg z-[9999]">
+                                  <DialogContent className="sm:max-w-lg bg-popover text-popover-foreground shadow-xl rounded-lg z-[9999]">
                                     <DialogHeader>
                                       <DialogTitle>Delete Course</DialogTitle>
                                       <DialogDescription>
@@ -682,42 +682,75 @@ export default function AdminPage() {
                       {Array.isArray(users) && users.length > 0 ? (
                         users.map((user) => (
                           <div
-                              key={user._id}
-                              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg space-y-3 sm:space-y-0"
-                            >
-                              {/* User Info */}
-                              <div>
-                                <p className="font-medium">{user.name}</p>
-                                <p className="text-muted-foreground">User ID: {user._id}</p>
-                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                                key={user._id}
+                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-3"
+                              >
+                                {/* User info */}
+                                <div className="flex flex-col">
+                                  <p className="font-medium">{user.name}</p>
+                                  <p className="text-muted-foreground break-all">
+                                    User ID: {user._id}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground break-all">
+                                    {user.email}
+                                  </p>
+
+                                  {/* Mobile-only buttons (visible on small screens) */}
+                                  <div className="flex items-center justify-between mt-3 sm:hidden">
+                                    <Badge
+                                      variant={
+                                        user.subscriptionStatus === "Active"
+                                          ? "default"
+                                          : user.subscriptionStatus === "Trial"
+                                          ? "secondary"
+                                          : "outline"
+                                      }
+                                    >
+                                      {user.subscriptionStatus}
+                                    </Badge>
+
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="cursor-pointer"
+                                      onClick={() =>
+                                        handleOpenDialog(user.subscriptionStatus, user._id)
+                                      }
+                                    >
+                                      <Edit className="h-3 w-3 mr-1" />
+                                      Edit
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                {/* Desktop buttons (hidden on small screens) */}
+                                <div className="hidden sm:flex items-center space-x-4">
+                                  <Badge
+                                    variant={
+                                      user.subscriptionStatus === "Active"
+                                        ? "default"
+                                        : user.subscriptionStatus === "Trial"
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                  >
+                                    {user.subscriptionStatus}
+                                  </Badge>
+
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                      handleOpenDialog(user.subscriptionStatus, user._id)
+                                    }
+                                  >
+                                    <Edit className="h-3 w-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                </div>
                               </div>
 
-                              {/* Badge and Button */}
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
-                                <Badge
-                                  variant={
-                                    user.subscriptionStatus === "Active"
-                                      ? "default"
-                                      : user.subscriptionStatus === "Trial"
-                                      ? "secondary"
-                                      : "outline"
-                                  }
-                                  className="self-start sm:self-auto"
-                                >
-                                  {user.subscriptionStatus}
-                                </Badge>
-
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="cursor-pointer w-full sm:w-auto"
-                                  onClick={() => handleOpenDialog(user.subscriptionStatus, user._id)}
-                                >
-                                  <Edit className="h-3 w-3 mr-1" />
-                                  Edit
-                                </Button>
-                              </div>
-                            </div>
                         ))
                       ) : (
                         <p className="text-sm text-muted-foreground text-center">No users found.</p>
@@ -730,7 +763,7 @@ export default function AdminPage() {
               {/* Single Dialog for Editing Subscription */}
               {editingUserId && (
                 <Dialog open={open} onOpenChange={setOpen}>
-                  <DialogContent className="sm:max-w-md bg-white text-black shadow-xl rounded-lg">
+                  <DialogContent className="sm:max-w-md bg-popover text-popover-foreground shadow-xl rounded-lg">
                     <DialogHeader>
                       <DialogTitle>Edit Subscription Status</DialogTitle>
                       <DialogDescription>

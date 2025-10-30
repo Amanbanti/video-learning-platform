@@ -4,8 +4,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
-import cron from 'node-cron';
-import axios from 'axios';
+import fs from 'fs';
 
 import { connectDB } from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
@@ -17,6 +16,19 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5001;
+
+// Trust proxy for correct protocol detection (Vercel/Proxies)
+app.set('trust proxy', 1);
+
+// Allow frontend to talk to backend
+const allowedOrigins = [
+  process.env.FRONTEND_ORIGIN,
+  'http://localhost:3000',
+].filter(Boolean);
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
 
 // Set __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -47,7 +59,23 @@ app.use('/api/courses', courseRoutes);
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+  // Correct path: frontend is a sibling of backend; avoid leading slash which makes it absolute
+  const buildDir = path.join(__dirname, '..', 'frontend', 'build');
+  const indexFile = path.join(buildDir, 'index.html');
+
+  if (fs.existsSync(indexFile)) {
+    app.use(express.static(buildDir));
+
+    // Express 5/path-to-regexp v6: use '/*' or '(.*)' instead of '*'
+    app.get('/*', (req, res) => {
+      res.sendFile(indexFile);
+    });
+  } else {
+    // If the frontend build is not present (e.g., backend-only deploy), keep a simple health route
+    app.get('/', (req, res) => {
+      res.send('API is running...');
+    });
+  }
 } else {
   app.get('/', (req, res) => {
     res.send('API is running...');

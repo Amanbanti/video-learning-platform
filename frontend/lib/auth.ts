@@ -66,6 +66,7 @@ export function getCurrentUser(): User | null {
       return null;
     }
 
+    // Note: Do not require `jwt` cookie here to support WebView/cross-site. Logout clears storage.
     return parsed.user;
   } catch {
     localStorage.removeItem("currentUser");

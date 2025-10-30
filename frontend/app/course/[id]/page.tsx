@@ -11,7 +11,7 @@ import Header from "../../../components/Header"
 import { toast } from "react-hot-toast"
 import { getCurrentUser, updateTrialVideosWatched } from "../../../lib/auth"
 import { fetchCourseById, type Course } from "../../../lib/course"
-import { YouTubePlayer } from "../../../components/YouTubeVideoPlayer"
+import VidstackYouTubePlayer from "../../../components/VidstackYouTubePlayer"
 
 export default function CoursePage() {
   const [user, setUser] = useState<any>(getCurrentUser())
@@ -19,7 +19,6 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(false)
   const [activeChapter, setActiveChapter] = useState<string | null>(null)
   const [localUser, setLocalUser] = useState<any>(user)
-
 
   const router = useRouter()
   const params = useParams()
@@ -49,42 +48,33 @@ export default function CoursePage() {
     fetchCourse()
   }, [user, courseId, router])
 
-  
-
-
   const handleChapterSelect = async (chapterId: string) => {
     const userDataString = localStorage.getItem("currentUser")
     if (!userDataString) return
-  
-    const currentUser = JSON.parse(userDataString).user
-  
-    try {
-      // Always call API to get updated user
-      const updatedUser = await updateTrialVideosWatched(currentUser._id)
 
-  
-      // Only update the user object, DO NOT update timestamp
+    const currentUser = JSON.parse(userDataString).user
+
+    try {
+      const updatedUser = await updateTrialVideosWatched(currentUser._id)
       localStorage.setItem(
         "currentUser",
         JSON.stringify({ ...JSON.parse(userDataString), user: updatedUser })
-        
       )
-
       setLocalUser(updatedUser)
 
-  
       if (updatedUser.subscriptionStatus === "Trial" || updatedUser.subscriptionStatus === "Pending") {
         toast.success(
           `You have watched ${updatedUser.trialVideosWatched} of ${updatedUser.maxTrialVideos} trial videos.`
         )
-  
+
         if (updatedUser.trialVideosWatched >= 4) {
           toast.error("Trial limit reached. Upgrade to Premium to continue watching.")
           router.push("/subscription")
           return
         }
       }
-  
+
+      // Toggle inline player for this chapter instead of navigating away
       setActiveChapter(prev => (prev === chapterId ? null : chapterId))
     } catch (err: any) {
       if (err.response?.status === 403) {
@@ -96,8 +86,6 @@ export default function CoursePage() {
       }
     }
   }
-
-
 
   // 🔹 Loading state
   if (loading) {
@@ -224,7 +212,12 @@ export default function CoursePage() {
 
                             {activeChapter === chapter._id ? (
                               <div className="aspect-video w-full rounded-lg overflow-hidden">
-                                <YouTubePlayer videoUrl={chapter.videoUrl} />
+                                <VidstackYouTubePlayer
+                                  src={chapter.videoUrl}
+                                  title={chapter.title}
+                                  className="w-full h-full"
+                                  customUI
+                                />
                               </div>
                             ) : (
                               <Button
