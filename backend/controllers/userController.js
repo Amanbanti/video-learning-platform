@@ -1,28 +1,28 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
-import nodemailer from "nodemailer";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../utils/emailService.js";
 
 // Create a reusable SMTP transporter from env (Gmail)
-const createTransporter = () => {
-  const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.EMAIL_PORT || 465);
-  const secure = String(process.env.EMAIL_SECURE || (port === 465)).toLowerCase() === 'true';
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-  });
-};
+// const createTransporter = () => {
+//   const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
+//   const port = Number(process.env.EMAIL_PORT || 465);
+//   const secure = String(process.env.EMAIL_SECURE || (port === 465)).toLowerCase() === 'true';
+//   return nodemailer.createTransport({
+//     host,
+//     port,
+//     secure,
+//     auth: {
+//       user: process.env.EMAIL_USER,
+//       pass: process.env.EMAIL_PASS,
+//     },
+//     connectionTimeout: 10000,
+//     greetingTimeout: 10000,
+//     socketTimeout: 15000,
+//   });
+// };
 
 // @desc    Register user and send OTP
 // @route   POST /api/users/register
@@ -64,28 +64,16 @@ export const registerUser = async (req, res) => {
     // Set auth cookie
     generateToken(req, res, user);
 
-    // Use standardized transporter (Gmail SMTP)
-    const transporter = createTransporter();
-
-    await new Promise((resolve, reject) => {
-      transporter.sendMail(
-        {
-          from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-          to: email,
-          subject: "Your Verification Code",
-          text: `Your verification code is: ${otp}. It expires in 60 minutes.`,
-        },
-        (err, info) => {
-          if (err) {
-            console.error("Email sending error:", err);
-            reject(err);
-          } else {
-            console.log("Email sent:", info?.messageId || info?.response);
-            resolve(info);
-          }
-        }
-      );
+    // Send verification email via HTTP-first provider
+    const emailResp = await sendEmail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Verification Code",
+      text: `Your verification code is: ${otp}. It expires in 60 minutes.`,
     });
+    if (!emailResp.ok) {
+      console.error("Email delivery failed (non-blocking)");
+    }
 
     res.status(201).json({ message: "OTP sent to email", email: user.email });
   } catch (err) {
@@ -353,10 +341,7 @@ export const sendOtpController = async (req, res) => {
     user.verificationCodeExpires = Date.now() + 5 * 60 * 1000;
     await user.save();
 
-    // Use standardized transporter (Gmail SMTP)
-    const transporter = createTransporter();
-
-    const mailOptions = {
+    const emailResp = await sendEmail({
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: email,
       subject: "Your Password Reset Verification Code",
@@ -370,20 +355,11 @@ export const sendOtpController = async (req, res) => {
           <p style="font-size:14px;color:#555;">This code will expire in 5 minutes.</p>
         </div>
       `,
-    };
-
-    // Wrap sendMail in a Promise to wait for email delivery
-    await new Promise((resolve, reject) => {
-      transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          console.error("Email sending error:", err);
-          reject(err);
-        } else {
-          console.log("Email sent:", info?.messageId || info?.response);
-          resolve(info);
-        }
-      });
     });
+    if (!emailResp.ok) {
+      console.error("Email delivery failed for password reset OTP");
+      return res.status(500).json({ message: "Failed to send OTP" });
+    }
 
     res.status(200).json({ message: "OTP sent successfully to your email" });
   } catch (error) {
@@ -555,9 +531,7 @@ export const updateUserPaymentSubscription = async (req, res) => {
 
     // Send email if user is moved to "Trial"
     if (subscriptionStatus === "Trial") {
-      const transporter = createTransporter();
-
-      const mailOptions = {
+      const emailResp = await sendEmail({
         from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
         to: user.email,
         subject: "Payment Receipt Update",
@@ -574,19 +548,10 @@ export const updateUserPaymentSubscription = async (req, res) => {
             <p style="font-size:14px;color:#555;">Thank you,<br/>Support Team</p>
           </div>
         `,
-      };
-
-      await new Promise((resolve, reject) => {
-        transporter.sendMail(mailOptions, (err, info) => {
-          if (err) {
-            console.error("Email sending error:", err);
-            reject(err);
-          } else {
-            console.log("Email sent:", info?.messageId || info?.response);
-            resolve(info);
-          }
-        });
       });
+      if (!emailResp.ok) {
+        console.error("Email delivery failed for trial notification");
+      }
     }
 
     res.status(200).json({
