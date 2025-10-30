@@ -655,7 +655,7 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>User Management</CardTitle>
-                      <CardDescription>Manage user accounts and subscriptions</CardDescription>
+                      <CardDescription>Manage user accounts</CardDescription>
                     </div>
 
                     {/* 🔍 Search Input */}
