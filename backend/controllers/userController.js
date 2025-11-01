@@ -4,13 +4,8 @@ import { generateToken } from "../utils/generateToken.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/emailService.js";
-
-
 import axios from "axios";
-import bcrypt from "bcrypt";
-import crypto from "crypto";
-import User from "../models/userModel.js"; // adjust path
-import { generateToken } from "../utils/generateToken.js";
+
 
 export const registerUser = async (req, res) => {
   const { name, email, password, freshOrRemedial, naturalOrSocial } = req.body;
@@ -79,7 +74,6 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 // @desc    Verify OTP and complete registration
 // @route   POST /api/users/verify-otp
