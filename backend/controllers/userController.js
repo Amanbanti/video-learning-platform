@@ -44,6 +44,8 @@ export const registerUser = async (req, res) => {
     // Set auth cookie
     generateToken(req, res, user);
 
+    console.log("Brevo API Key:", process.env.BREVO_API_KEY);
+
     // Send verification email via Brevo
     try {
       await axios.post(
