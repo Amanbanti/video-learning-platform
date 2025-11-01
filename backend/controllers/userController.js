@@ -318,6 +318,9 @@ export const uploadPaymentReceipt = async (req, res) => {
   });
 };
 
+
+
+
 // Generate a random 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -336,23 +339,37 @@ export const sendOtpController = async (req, res) => {
     user.verificationCodeExpires = Date.now() + 5 * 60 * 1000;
     await user.save();
 
-    const emailResp = await sendEmail({
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Password Reset Verification Code",
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border-radius:10px;border:1px solid #ddd;">
-          <h2 style="text-align:center;color:#333;">Password Reset Verification</h2>
-          <p style="font-size:16px;">Your verification code is:</p>
-          <div style="font-size:24px;font-weight:bold;text-align:center;margin:20px 0;color:#007bff;">
-            ${otp}
-          </div>
-          <p style="font-size:14px;color:#555;">This code will expire in 5 minutes.</p>
-        </div>
-      `,
-    });
-    if (!emailResp.ok) {
-      console.error("Email delivery failed for password reset OTP");
+    // Send OTP via Brevo
+    try {
+      await axios.post(
+        "https://api.brevo.com/v3/smtp/email",
+        {
+          sender: {
+            name: process.env.EMAIL_SENDER_NAME || "Your App Name",
+            email: process.env.EMAIL_SENDER,
+          },
+          to: [{ email, name: user.name || "" }],
+          subject: "Your Password Reset Verification Code",
+          htmlContent: `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border-radius:10px;border:1px solid #ddd;">
+              <h2 style="text-align:center;color:#333;">Password Reset Verification</h2>
+              <p style="font-size:16px;">Your verification code is:</p>
+              <div style="font-size:24px;font-weight:bold;text-align:center;margin:20px 0;color:#007bff;">
+                ${otp}
+              </div>
+              <p style="font-size:14px;color:#555;">This code will expire in 5 minutes.</p>
+            </div>
+          `,
+        },
+        {
+          headers: {
+            "api-key": process.env.BREVO_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (emailError) {
+      console.error("Brevo email failed:", emailError.response?.data || emailError.message);
       return res.status(500).json({ message: "Failed to send OTP" });
     }
 
@@ -503,6 +520,8 @@ export const fetchPendingUsers = async (req, res) => {
   }
 };
 
+
+
 export const updateUserPaymentSubscription = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -526,26 +545,39 @@ export const updateUserPaymentSubscription = async (req, res) => {
 
     // Send email if user is moved to "Trial"
     if (subscriptionStatus === "Trial") {
-      const emailResp = await sendEmail({
-        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-        to: user.email,
-        subject: "Payment Receipt Update",
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border-radius:10px;border:1px solid #ddd;">
-            <h2 style="text-align:center;color:#333;">Payment Receipt Update</h2>
-            <p style="font-size:16px;">Dear ${user.name},</p>
-            <p style="font-size:16px;">
-              Your recent payment receipt has been <strong>moved to trial mode</strong> due to an invalid or fake receipt.
-            </p>
-            <p style="font-size:16px;">
-              Please try submitting your payment again or contact our support team for assistance.
-            </p>
-            <p style="font-size:14px;color:#555;">Thank you,<br/>Support Team</p>
-          </div>
-        `,
-      });
-      if (!emailResp.ok) {
-        console.error("Email delivery failed for trial notification");
+      try {
+        await axios.post(
+          "https://api.brevo.com/v3/smtp/email",
+          {
+            sender: {
+              name: process.env.EMAIL_SENDER_NAME || "Your App Name",
+              email: process.env.EMAIL_SENDER,
+            },
+            to: [{ email: user.email, name: user.name || "" }],
+            subject: "Payment Receipt Update",
+            htmlContent: `
+              <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;border-radius:10px;border:1px solid #ddd;">
+                <h2 style="text-align:center;color:#333;">Payment Receipt Update</h2>
+                <p style="font-size:16px;">Dear ${user.name},</p>
+                <p style="font-size:16px;">
+                  Your recent payment receipt has been <strong>moved to trial mode</strong> due to an invalid or fake receipt.
+                </p>
+                <p style="font-size:16px;">
+                  Please try submitting your payment again or contact our support team for assistance.
+                </p>
+                <p style="font-size:14px;color:#555;">Thank you,<br/>Support Team</p>
+              </div>
+            `,
+          },
+          {
+            headers: {
+              "api-key": process.env.BREVO_API_KEY,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (emailError) {
+        console.error("Brevo email failed for trial notification:", emailError.response?.data || emailError.message);
       }
     }
 
@@ -558,6 +590,7 @@ export const updateUserPaymentSubscription = async (req, res) => {
     res.status(500).json({ message: "Server error while updating subscription." });
   }
 };
+
 
 export const getUserPaymentStats = async (req, res) => {
   try {
