@@ -216,7 +216,6 @@ export default function CoursePage() {
                                   src={chapter.videoUrl}
                                   title={chapter.title}
                                   className="w-full h-full"
-                                  customUI
                                 />
                               </div>
                             ) : (
