@@ -5,28 +5,13 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/emailService.js";
 
-// Create a reusable SMTP transporter from env (Gmail)
-// const createTransporter = () => {
-//   const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
-//   const port = Number(process.env.EMAIL_PORT || 465);
-//   const secure = String(process.env.EMAIL_SECURE || (port === 465)).toLowerCase() === 'true';
-//   return nodemailer.createTransport({
-//     host,
-//     port,
-//     secure,
-//     auth: {
-//       user: process.env.EMAIL_USER,
-//       pass: process.env.EMAIL_PASS,
-//     },
-//     connectionTimeout: 10000,
-//     greetingTimeout: 10000,
-//     socketTimeout: 15000,
-//   });
-// };
 
-// @desc    Register user and send OTP
-// @route   POST /api/users/register
-// @access  Public
+import axios from "axios";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+import User from "../models/userModel.js"; // adjust path
+import { generateToken } from "../utils/generateToken.js";
+
 export const registerUser = async (req, res) => {
   const { name, email, password, freshOrRemedial, naturalOrSocial } = req.body;
 
@@ -44,7 +29,7 @@ export const registerUser = async (req, res) => {
 
     // Generate OTP
     const otp = crypto.randomInt(100000, 999999).toString(); // 6-digit code
-    const otpExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month
+    const otpExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
 
     const user = await User.create({
       name,
@@ -64,15 +49,28 @@ export const registerUser = async (req, res) => {
     // Set auth cookie
     generateToken(req, res, user);
 
-    // Send verification email via HTTP-first provider
-    const emailResp = await sendEmail({
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Verification Code",
-      text: `Your verification code is: ${otp}. It expires in 60 minutes.`,
-    });
-    if (!emailResp.ok) {
-      console.error("Email delivery failed (non-blocking)");
+    // Send verification email via Brevo
+    try {
+      await axios.post(
+        "https://api.brevo.com/v3/smtp/email",
+        {
+          sender: {
+            name: process.env.EMAIL_SENDER_NAME || "Your App Name",
+            email: process.env.EMAIL_SENDER,
+          },
+          to: [{ email, name }],
+          subject: "Your Verification Code",
+          htmlContent: `<p>Your verification code is: <b>${otp}</b></p><p>It expires in 60 minutes.</p>`,
+        },
+        {
+          headers: {
+            "api-key": process.env.BREVO_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (emailError) {
+      console.error("Brevo email failed:", emailError.response?.data || emailError.message);
     }
 
     res.status(201).json({ message: "OTP sent to email", email: user.email });
@@ -81,6 +79,7 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // @desc    Verify OTP and complete registration
 // @route   POST /api/users/verify-otp

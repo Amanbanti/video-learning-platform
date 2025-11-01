@@ -10,6 +10,7 @@ import { connectDB } from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import userRoutes from "./routes/userRoute.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import emailRoute from './routes/emailRoute.js';
 
 // Load environment variables
 dotenv.config();
@@ -48,6 +49,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // API Routes
 app.use('/api/users', userRoutes);
 app.use("/api/courses", courseRoutes);
+app.use('/api/send-email', emailRoute);
+
 
 
 // Serve frontend in production
