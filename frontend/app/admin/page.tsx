@@ -651,26 +651,26 @@ export default function AdminPage() {
           {/* User Management Tab */}
           <TabsContent value="users" className="space-y-6">
           <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>User Management</CardTitle>
-                      <CardDescription>Manage user accounts</CardDescription>
-                    </div>
+          <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle>User Management</CardTitle>
+                  <CardDescription>Manage user accounts</CardDescription>
+                </div>
 
-                    {/* 🔍 Search Input */}
-                    <div className="relative w-64">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        placeholder="Search users..."
-                        className="pl-9 pr-4 py-2"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </CardHeader>
+                {/* 🔍 Search Input */}
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search users..."
+                    className="pl-9 pr-4 py-2 w-full"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </CardHeader>
 
                 <CardContent>
                   {userLoading ? (
